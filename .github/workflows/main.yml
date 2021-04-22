@@ -33,7 +33,19 @@ jobs:
         if: runner.os == 'Windows'
         run: pkg/deej/scripts/windows/build-${{ matrix.mode }}.bat
         shell: cmd
+      - name: Archive Windows build
+        if: runner.os == 'Windows' && matrix.mode == 'release'
+        uses: actions/upload-artifact@v2
+        with:
+          name: windows-build
+          path: deej-release.exe
 
       - name: Build deej (Linux)
         if: runner.os == 'Linux'
         run: pkg/deej/scripts/linux/build-${{ matrix.mode }}.sh
+      - name: Archive Linux build
+        if: runner.os == 'Linux' && matrix.mode == 'release'
+        uses: actions/upload-artifact@v2
+        with:
+          name: linux-build
+          path: deej-release
