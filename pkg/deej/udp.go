@@ -15,19 +15,20 @@ import (
 
 // UdpIO provides a deej-aware abstraction layer to managing UDP connections
 type UdpIO struct {
-	port uint
-
 	deej   *Deej
 	logger *zap.SugaredLogger
 
 	stopChannel chan bool
 
 	lastKnownNumSliders        int
+	lastKnownNumMuteButtons    int
 	currentSliderPercentValues []float32
+	currentMuteButtonStates    []*bool
 
 	connection *net.UDPConn
 
-	sliderMoveConsumers []chan SliderMoveEvent
+	sliderMoveConsumers      []chan SliderMoveEvent
+	muteButtonClickConsumers []chan MuteButtonClickEvent
 }
 
 var expectedUdpLinePattern = regexp.MustCompile(`\w+|^\d{1,4}(\|\d{1,4})*$`)
@@ -189,13 +190,15 @@ func (udpio *UdpIO) handlePacket(logger *zap.SugaredLogger, packet string) {
 
 	switch parts[0] {
 	case "Sliders":
+		logger.Debug("Got Sliders data: ", parts[1:])
 		udpio.handleSliders(logger, parts[1:])
 		return
-	case "Buttons":
-		logger.Info("Got Buttons data: ", parts[1:])
+	case "MuteButtons":
+		logger.Debug("Got MuteButtons data: ", parts[1:])
+		udpio.handleMuteButtons(logger, parts[1:])
 		return
-	case "Change":
-		logger.Info("Got Change data: ", parts[1:])
+	case "SwitchOutput":
+		logger.Debug("Got SwitchOutput data: ", parts[1:])
 		return
 	default:
 		logger.Warn("bad packet opcode")
@@ -266,6 +269,52 @@ func (udpio *UdpIO) handleSliders(logger *zap.SugaredLogger, data []string) {
 		for _, consumer := range udpio.sliderMoveConsumers {
 			for _, moveEvent := range moveEvents {
 				consumer <- moveEvent
+			}
+		}
+	}
+}
+
+func (udpio *UdpIO) handleMuteButtons(logger *zap.SugaredLogger, data []string) {
+
+	numMuteButtons := len(data)
+
+	// update our slider count, if needed - this will send slider move events for all
+	if numMuteButtons != udpio.lastKnownNumMuteButtons {
+		logger.Infow("Detected mute buttons", "amount", numMuteButtons)
+		udpio.lastKnownNumMuteButtons = numMuteButtons
+		udpio.currentMuteButtonStates = make([]*bool, numMuteButtons)
+	}
+
+	// for each button:
+	clickEvents := []MuteButtonClickEvent{}
+	for buttonIndex, muteStringValue := range data {
+		muteValue, err := strconv.ParseBool(muteStringValue)
+		if err != nil {
+			logger.Fatal(err)
+			continue
+		}
+		firstInit := false
+		if udpio.currentMuteButtonStates[buttonIndex] == nil {
+			udpio.currentMuteButtonStates[buttonIndex] = new(bool)
+			firstInit = true
+		}
+
+		if *udpio.currentMuteButtonStates[buttonIndex] != muteValue || firstInit {
+			// Update the saved value and create a move event
+			clickEvents = append(clickEvents, MuteButtonClickEvent{
+				MuteButtonID: buttonIndex,
+				mute:         muteValue,
+			})
+		}
+		*udpio.currentMuteButtonStates[buttonIndex] = muteValue
+		logger.Debug("Mute button clicked", "event", clickEvents[len(clickEvents)-1])
+	}
+
+	// deliver move events if there are any, towards all potential consumers
+	if len(clickEvents) > 0 {
+		for _, consumer := range udpio.muteButtonClickConsumers {
+			for _, clickEvent := range clickEvents {
+				consumer <- clickEvent
 			}
 		}
 	}
