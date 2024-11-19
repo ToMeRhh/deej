@@ -30,7 +30,7 @@ type UdpIO struct {
 	sliderMoveConsumers []chan SliderMoveEvent
 }
 
-var expectedUdpLinePattern = regexp.MustCompile(`^\d{1,4}(\|\d{1,4})*$`)
+var expectedUdpLinePattern = regexp.MustCompile(`\w+|^\d{1,4}(\|\d{1,4})*$`)
 
 // NewUdpIO creates a UdpIO instance that uses the provided deej
 // instance's connection info to establish communications with the controller
@@ -175,13 +175,37 @@ func (udpio *UdpIO) setupOnConfigReload() {
 }
 
 func (udpio *UdpIO) handlePacket(logger *zap.SugaredLogger, packet string) {
+	logger.Info("got packet:", packet)
 	if !expectedUdpLinePattern.MatchString(packet) {
+		logger.Info("bad syntax")
 		return
 	}
 
-	// split on pipe (|), this gives a slice of numerical strings between "0" and "1023"
-	splitLine := strings.Split(packet, "|")
-	numSliders := len(splitLine)
+	parts := strings.Split(packet, "|")
+	if len(parts) < 2 {
+		fmt.Println("Invalid input format")
+		return
+	}
+
+	switch parts[0] {
+	case "Sliders":
+		udpio.handleSliders(logger, parts[1:])
+		return
+	case "Buttons":
+		logger.Info("Got Buttons data: ", parts[1:])
+		return
+	case "Change":
+		logger.Info("Got Change data: ", parts[1:])
+		return
+	default:
+		logger.Warn("bad packet opcode")
+		return
+	}
+}
+
+func (udpio *UdpIO) handleSliders(logger *zap.SugaredLogger, data []string) {
+
+	numSliders := len(data) - 1
 
 	// update our slider count, if needed - this will send slider move events for all
 	if numSliders != udpio.lastKnownNumSliders {
@@ -197,7 +221,7 @@ func (udpio *UdpIO) handlePacket(logger *zap.SugaredLogger, packet string) {
 
 	// for each slider:
 	moveEvents := []SliderMoveEvent{}
-	for sliderIdx, stringValue := range splitLine {
+	for sliderIdx, stringValue := range data {
 
 		// convert string values to integers ("1023" -> 1023)
 		number, _ := strconv.Atoi(string(stringValue))
@@ -205,7 +229,7 @@ func (udpio *UdpIO) handlePacket(logger *zap.SugaredLogger, packet string) {
 		// turns out the first line could come out dirty sometimes (i.e. "4558|925|41|643|220")
 		// so let's check the first number for correctness just in case
 		if sliderIdx == 0 && number > 1023 {
-			udpio.logger.Debugw("Got malformed packet from UDP, ignoring", "packet", packet)
+			udpio.logger.Debugw("Got malformed packet from UDP, ignoring", "packet", data)
 			return
 		}
 
