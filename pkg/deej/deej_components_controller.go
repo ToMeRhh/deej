@@ -14,7 +14,7 @@ type SliderMoveEvent struct {
 	PercentValue float32
 }
 
-// MuteButtonClickEvent represents a single MuteButton click captured by deej
+// ToggleOutoutDeviceClickEvent represents a single ToggleOutputDevice click captured by deej
 type ToggleOutoutDeviceClickEvent struct {
 	selectedOutputDevice int
 }

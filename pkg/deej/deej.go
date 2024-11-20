@@ -3,7 +3,6 @@
 package deej
 
 import (
-	"errors"
 	"fmt"
 	"os"
 
@@ -95,7 +94,7 @@ func (d *Deej) Initialize() error {
 		d.logger.Info("Created UDP deejComponentsController")
 	} else {
 		d.logger.Errorw("invalid controller type")
-		return fmt.Errorf("invalid controller type", d.config.ControllerType)
+		return fmt.Errorf("invalid controller type %s", d.config.ControllerType)
 	}
 
 	// initialize the session map
@@ -151,35 +150,9 @@ func (d *Deej) run() {
 	go func() {
 		if err := d.deejComponentsController.Start(); err != nil {
 			d.logger.Warnw("Failed to start first-time slider connection", "error", err)
-
-			if d.config.ControllerType == "serial" {
-				// If the port is busy, that's because something else is connected - notify and quit
-				if errors.Is(err, os.ErrPermission) {
-					d.logger.Warnw("Serial port seems busy, notifying user and closing",
-						"comPort", d.config.SerialConnectionInfo.COMPort)
-
-					d.notifier.Notify(fmt.Sprintf("Can't connect to %s!", d.config.SerialConnectionInfo.COMPort),
-						"This slider port is busy, make sure to close any slider monitor or other deej instance.")
-
-					d.signalStop()
-
-					// also notify if the COM port they gave isn't found, maybe their config is wrong
-				} else if errors.Is(err, os.ErrNotExist) {
-					d.logger.Warnw("Provided COM port seems wrong, notifying user and closing",
-						"comPort", d.config.SerialConnectionInfo.COMPort)
-
-					d.notifier.Notify(fmt.Sprintf("Can't connect to %s!", d.config.SerialConnectionInfo.COMPort),
-						"This slider port doesn't exist, check your configuration and make sure it's set correctly.")
-
-					d.signalStop()
-				}
-			} else if d.config.ControllerType == "udp" {
-				d.notifier.Notify(fmt.Sprintf("Could not start UDP listener on port %d!", d.config.UdpConnectionInfo.UdpPort),
-					"This UDP port is busy, make sure to close any slider monitor or other deej instance.")
-
-				d.signalStop()
-			}
-
+			d.notifier.Notify(fmt.Sprintf("Could not start UDP listener on port %d!", d.config.UdpConnectionInfo.UdpPort),
+				"This UDP port is busy, make sure to close any slider monitor or other deej instance.")
+			d.signalStop()
 		}
 	}()
 

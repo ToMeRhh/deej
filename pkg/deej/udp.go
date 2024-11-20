@@ -134,12 +134,7 @@ func (udpio *UdpIO) close(logger *zap.SugaredLogger) {
 
 // Stop signals us to shut down our slider connection, if one is active
 func (udpio *UdpIO) Stop() {
-	if udpio.connection != nil {
-		udpio.logger.Debug("Shutting down serial connection")
-		udpio.stopChannel <- true
-	} else {
-		udpio.logger.Debug("Not currently connected, nothing to stop")
-	}
+	udpio.logger.Debug("Not currently connected, nothing to stop")
 }
 
 // SubscribeToSliderMoveEvents returns an unbuffered channel that receives

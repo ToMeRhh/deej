@@ -20,11 +20,6 @@ type CanonicalConfig struct {
 
 	ControllerType string
 
-	SerialConnectionInfo struct {
-		COMPort  string
-		BaudRate int
-	}
-
 	UdpConnectionInfo struct {
 		UdpPort int
 	}
@@ -61,8 +56,6 @@ const (
 	configKeyNoiseReductionLevel = "noise_reduction"
 	configKeyUdpPort             = "udp_port"
 	configKeyControllerType      = "controller_type"
-
-	defaultControllerType = "serial"
 
 	defaultCOMPort  = "COM4"
 	defaultBaudRate = 9600
@@ -162,7 +155,6 @@ func (cc *CanonicalConfig) Load() error {
 	cc.logger.Infow("Config values",
 		"sliderMapping", cc.SliderMapping,
 		"controllerType", cc.ControllerType,
-		"serialConnectionInfo", cc.SerialConnectionInfo,
 		"udpConnectionInfo", cc.UdpConnectionInfo,
 		"invertSliders", cc.InvertSliders)
 
@@ -243,27 +235,14 @@ func (cc *CanonicalConfig) populateFromVipers() error {
 
 	// get the rest of the config fields - viper saves us a lot of effort here
 	switch cc.userConfig.GetString(configKeyControllerType) {
-	case "serial", "udp":
+	case "udp":
 		cc.ControllerType = cc.userConfig.GetString(configKeyControllerType)
 	default:
 		cc.logger.Warnw("Invalid controller type specified, using default value",
 			"key", configKeyControllerType,
-			"invalidValue", cc.userConfig.GetString(configKeyControllerType),
-			"defaultValue", defaultControllerType)
+			"invalidValue", cc.userConfig.GetString(configKeyControllerType))
 	}
 	cc.logger.Info("Added controller type: ", cc.ControllerType)
-
-	cc.SerialConnectionInfo.COMPort = cc.userConfig.GetString(configKeyCOMPort)
-
-	cc.SerialConnectionInfo.BaudRate = cc.userConfig.GetInt(configKeyBaudRate)
-	if cc.SerialConnectionInfo.BaudRate <= 0 {
-		cc.logger.Warnw("Invalid baud rate specified, using default value",
-			"key", configKeyBaudRate,
-			"invalidValue", cc.SerialConnectionInfo.BaudRate,
-			"defaultValue", defaultBaudRate)
-
-		cc.SerialConnectionInfo.BaudRate = defaultBaudRate
-	}
 
 	cc.UdpConnectionInfo.UdpPort = cc.userConfig.GetInt(configKeyUdpPort)
 	if (cc.UdpConnectionInfo.UdpPort <= 0) || (cc.UdpConnectionInfo.UdpPort >= 65536) {

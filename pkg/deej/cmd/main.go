@@ -16,7 +16,7 @@ var (
 )
 
 func init() {
-	flag.BoolVar(&verbose, "verbose", false, "show verbose logs (useful for debugging serial)")
+	flag.BoolVar(&verbose, "verbose", false, "show verbose logs (useful for debugging)")
 	flag.BoolVar(&verbose, "v", false, "shorthand for --verbose")
 	flag.Parse()
 }
