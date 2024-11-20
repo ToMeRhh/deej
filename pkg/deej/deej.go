@@ -20,11 +20,13 @@ const (
 
 // Deej is the main entity managing access to all sub-components
 type Deej struct {
-	logger           *zap.SugaredLogger
-	notifier         Notifier
-	config           *CanonicalConfig
-	sliderController SliderController
-	sessions         *sessionMap
+	logger                             *zap.SugaredLogger
+	notifier                           Notifier
+	config                             *CanonicalConfig
+	sliderController                   SliderController
+	muteButtonController               MuteButtonController
+	toggleOutoutDeviceButtonController ToggleOutoutDeviceButtonController
+	sessions                           *sessionMap
 
 	stopChannel chan bool
 	version     string

@@ -81,6 +81,8 @@ func (m *sessionMap) initialize() error {
 
 	m.setupOnConfigReload()
 	m.setupOnSliderMove()
+	m.setupOnMuteButtonClicked()
+	m.setupOnToggleOutputDeviceButtonClicked()
 
 	return nil
 }
@@ -137,14 +139,31 @@ func (m *sessionMap) setupOnConfigReload() {
 }
 
 func (m *sessionMap) setupOnSliderMove() {
-	sliderEventsChannel := m.deej.sliderController.SubscribeToSliderMoveEvents()
+	eventsChannel := m.deej.sliderController.SubscribeToSliderMoveEvents()
 
 	go func() {
-		for {
-			select {
-			case event := <-sliderEventsChannel:
-				m.handleSliderMoveEvent(event)
-			}
+		for event := range eventsChannel {
+			m.handleSliderMoveEvent(event)
+		}
+	}()
+}
+
+func (m *sessionMap) setupOnMuteButtonClicked() {
+	eventsChannel := m.deej.muteButtonController.SubscribeToMuteButtonClickEvents()
+
+	go func() {
+		for event := range eventsChannel {
+			m.handleMuteButtonClickedEvent(event)
+		}
+	}()
+}
+
+func (m *sessionMap) setupOnToggleOutputDeviceButtonClicked() {
+	eventsChannel := m.deej.toggleOutoutDeviceButtonController.SubscribeToToggleOutoutDeviceClickEvents()
+
+	go func() {
+		for event := range eventsChannel {
+			m.handleToggleOutputDeviceClickedEvent(event)
 		}
 	}()
 }
@@ -270,6 +289,10 @@ func (m *sessionMap) handleSliderMoveEvent(event SliderMoveEvent) {
 		m.refreshSessions(true)
 	}
 }
+
+func (m *sessionMap) handleMuteButtonClickedEvent(event MuteButtonClickEvent) {}
+
+func (m *sessionMap) handleToggleOutputDeviceClickedEvent(event ToggleOutoutDeviceClickEvent) {}
 
 func (m *sessionMap) targetHasSpecialTransform(target string) bool {
 	return strings.HasPrefix(target, specialTargetTransformPrefix)
