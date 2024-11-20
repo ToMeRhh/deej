@@ -15,6 +15,10 @@ slider_mapping:
     - rocketleague.exe
   4: discord.exe
 
+mute_button_mapping:
+  0: master
+  1: microphone
+
 # set this to true if you want the controls inverted (i.e. top is 0%, bottom is 100%)
 invert_sliders: false
 
