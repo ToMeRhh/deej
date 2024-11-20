@@ -139,7 +139,7 @@ func (m *sessionMap) setupOnConfigReload() {
 }
 
 func (m *sessionMap) setupOnSliderMove() {
-	eventsChannel := m.deej.sliderController.SubscribeToSliderMoveEvents()
+	eventsChannel := m.deej.deejComponentsController.SubscribeToSliderMoveEvents()
 
 	go func() {
 		for event := range eventsChannel {
@@ -149,7 +149,7 @@ func (m *sessionMap) setupOnSliderMove() {
 }
 
 func (m *sessionMap) setupOnMuteButtonClicked() {
-	eventsChannel := m.deej.muteButtonController.SubscribeToMuteButtonClickEvents()
+	eventsChannel := m.deej.deejComponentsController.SubscribeToMuteButtonClickEvents()
 
 	go func() {
 		for event := range eventsChannel {
@@ -159,7 +159,7 @@ func (m *sessionMap) setupOnMuteButtonClicked() {
 }
 
 func (m *sessionMap) setupOnToggleOutputDeviceButtonClicked() {
-	eventsChannel := m.deej.toggleOutoutDeviceButtonController.SubscribeToToggleOutoutDeviceClickEvents()
+	eventsChannel := m.deej.deejComponentsController.SubscribeToToggleOutoutDeviceClickEvents()
 
 	go func() {
 		for event := range eventsChannel {

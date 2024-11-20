@@ -20,13 +20,11 @@ const (
 
 // Deej is the main entity managing access to all sub-components
 type Deej struct {
-	logger                             *zap.SugaredLogger
-	notifier                           Notifier
-	config                             *CanonicalConfig
-	sliderController                   SliderController
-	muteButtonController               MuteButtonController
-	toggleOutoutDeviceButtonController ToggleOutoutDeviceButtonController
-	sessions                           *sessionMap
+	logger                   *zap.SugaredLogger
+	notifier                 Notifier
+	config                   *CanonicalConfig
+	deejComponentsController DeejComponentsController
+	sessions                 *sessionMap
 
 	stopChannel chan bool
 	version     string
@@ -86,25 +84,18 @@ func (d *Deej) Initialize() error {
 		return fmt.Errorf("load config during init: %w", err)
 	}
 
-	if d.config.ControllerType == "serial" {
-		serial, err := NewSerialIO(d, d.logger)
-		if err != nil {
-			d.logger.Errorw("Failed to create SerialIO", "error", err)
-			return fmt.Errorf("create new SerialIO: %w", err)
-		}
-
-		d.sliderController = serial
-
-		d.logger.Info("Created serial SliderController")
-	} else if d.config.ControllerType == "udp" {
+	if d.config.ControllerType == "udp" {
 		udp, err := NewUdpIO(d, d.logger)
 		if err != nil {
 			d.logger.Errorw("Failed to create UdpIO", "error", err)
 			return fmt.Errorf("create new UdpIO: %w", err)
 		}
 
-		d.sliderController = udp
-		d.logger.Info("Created UDP SliderController")
+		d.deejComponentsController = udp
+		d.logger.Info("Created UDP deejComponentsController")
+	} else {
+		d.logger.Errorw("invalid controller type")
+		return fmt.Errorf("invalid controller type", d.config.ControllerType)
 	}
 
 	// initialize the session map
@@ -158,7 +149,7 @@ func (d *Deej) run() {
 
 	// connect to the arduino for the first time
 	go func() {
-		if err := d.sliderController.Start(); err != nil {
+		if err := d.deejComponentsController.Start(); err != nil {
 			d.logger.Warnw("Failed to start first-time slider connection", "error", err)
 
 			if d.config.ControllerType == "serial" {
@@ -214,7 +205,7 @@ func (d *Deej) stop() error {
 	d.logger.Info("Stopping")
 
 	d.config.StopWatchingConfigFile()
-	d.sliderController.Stop()
+	d.deejComponentsController.Stop()
 
 	// release the session map
 	if err := d.sessions.release(); err != nil {

@@ -147,7 +147,22 @@ func (udpio *UdpIO) Stop() {
 func (udpio *UdpIO) SubscribeToSliderMoveEvents() chan SliderMoveEvent {
 	ch := make(chan SliderMoveEvent)
 	udpio.sliderMoveConsumers = append(udpio.sliderMoveConsumers, ch)
+	return ch
+}
 
+// SubscribeToMuteButtonClickEvents returns an unbuffered channel that receives
+// a sliderMoveEvent struct every time a slider moves
+func (udpio *UdpIO) SubscribeToMuteButtonClickEvents() chan MuteButtonClickEvent {
+	ch := make(chan MuteButtonClickEvent)
+	udpio.muteButtonClickConsumers = append(udpio.muteButtonClickConsumers, ch)
+	return ch
+}
+
+// SubscribeToToggleOutoutDeviceClickEvents returns an unbuffered channel that receives
+// a sliderMoveEvent struct every time a slider moves
+func (udpio *UdpIO) SubscribeToToggleOutoutDeviceClickEvents() chan ToggleOutoutDeviceClickEvent {
+	ch := make(chan ToggleOutoutDeviceClickEvent)
+	udpio.selectedOutoutDeviceChangedConsumers = append(udpio.selectedOutoutDeviceChangedConsumers, ch)
 	return ch
 }
 
@@ -297,21 +312,13 @@ func (udpio *UdpIO) handleMuteButtons(logger *zap.SugaredLogger, data []string) 
 			logger.Fatal(err)
 			continue
 		}
-		firstInit := false
-		if udpio.currentMuteButtonStates[buttonIndex] == nil {
-			udpio.currentMuteButtonStates[buttonIndex] = new(bool)
-			firstInit = true
-		}
-
-		if *udpio.currentMuteButtonStates[buttonIndex] != muteValue || firstInit {
-			// Update the saved value and create a move event
-			clickEvents = append(clickEvents, MuteButtonClickEvent{
-				MuteButtonID: buttonIndex,
-				mute:         muteValue,
-			})
-		}
-		*udpio.currentMuteButtonStates[buttonIndex] = muteValue
+		// Update the saved value and create a move event
+		clickEvents = append(clickEvents, MuteButtonClickEvent{
+			MuteButtonID: buttonIndex,
+			mute:         muteValue,
+		})
 		logger.Debug("Mute button clicked", "event", clickEvents[len(clickEvents)-1])
+
 	}
 
 	// deliver move events if there are any, towards all potential consumers
@@ -327,21 +334,13 @@ func (udpio *UdpIO) handleMuteButtons(logger *zap.SugaredLogger, data []string) 
 func (udpio *UdpIO) handleSwitchOutput(logger *zap.SugaredLogger, data string) {
 	// convert output device ID to int
 	outputId, _ := strconv.Atoi(string(data))
-
-	// check if it changes the desired state (could just be a jumpy raw slider value)
-	if udpio.currentSelectedOutputDevice != outputId {
-		udpio.currentSelectedOutputDevice = outputId
-
-		event := ToggleOutoutDeviceClickEvent{
-			selectedOutputDevice: outputId,
-		}
-
-		if udpio.deej.Verbose() {
-			logger.Debugw("output device changed", "event", event)
-		}
-
-		for _, consumer := range udpio.selectedOutoutDeviceChangedConsumers {
-			consumer <- event
-		}
+	event := ToggleOutoutDeviceClickEvent{
+		selectedOutputDevice: outputId,
 	}
+	logger.Debugw("output device changed", "event", event)
+
+	for _, consumer := range udpio.selectedOutoutDeviceChangedConsumers {
+		consumer <- event
+	}
+
 }
