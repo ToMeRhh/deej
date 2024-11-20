@@ -19,6 +19,10 @@ mute_button_mapping:
   0: master
   1: microphone
 
+available_output_devices:
+  0: UUID0
+  1: UUID1
+
 # set this to true if you want the controls inverted (i.e. top is 0%, bottom is 100%)
 invert_sliders: false
 
