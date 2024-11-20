@@ -18,8 +18,6 @@ import (
 type CanonicalConfig struct {
 	SliderMapping *sliderMap
 
-	ControllerType string
-
 	UdpConnectionInfo struct {
 		UdpPort int
 	}
@@ -51,14 +49,8 @@ const (
 
 	configKeySliderMapping       = "slider_mapping"
 	configKeyInvertSliders       = "invert_sliders"
-	configKeyCOMPort             = "com_port"
-	configKeyBaudRate            = "baud_rate"
 	configKeyNoiseReductionLevel = "noise_reduction"
 	configKeyUdpPort             = "udp_port"
-	configKeyControllerType      = "controller_type"
-
-	defaultCOMPort  = "COM4"
-	defaultBaudRate = 9600
 
 	defaultUdpPort = 16990
 )
@@ -92,12 +84,8 @@ func NewConfig(logger *zap.SugaredLogger, notifier Notifier) (*CanonicalConfig, 
 
 	userConfig.SetDefault(configKeySliderMapping, map[string][]string{})
 	userConfig.SetDefault(configKeyInvertSliders, false)
-	userConfig.SetDefault(configKeyCOMPort, defaultCOMPort)
-	userConfig.SetDefault(configKeyBaudRate, defaultBaudRate)
 
 	userConfig.SetDefault(configKeyUdpPort, defaultUdpPort)
-
-	userConfig.SetDefault(configKeyControllerType, defaultControllerType)
 
 	internalConfig := viper.New()
 	internalConfig.SetConfigName(internalConfigName)
@@ -154,7 +142,6 @@ func (cc *CanonicalConfig) Load() error {
 	cc.logger.Info("Loaded config successfully")
 	cc.logger.Infow("Config values",
 		"sliderMapping", cc.SliderMapping,
-		"controllerType", cc.ControllerType,
 		"udpConnectionInfo", cc.UdpConnectionInfo,
 		"invertSliders", cc.InvertSliders)
 
@@ -234,15 +221,6 @@ func (cc *CanonicalConfig) populateFromVipers() error {
 	)
 
 	// get the rest of the config fields - viper saves us a lot of effort here
-	switch cc.userConfig.GetString(configKeyControllerType) {
-	case "udp":
-		cc.ControllerType = cc.userConfig.GetString(configKeyControllerType)
-	default:
-		cc.logger.Warnw("Invalid controller type specified, using default value",
-			"key", configKeyControllerType,
-			"invalidValue", cc.userConfig.GetString(configKeyControllerType))
-	}
-	cc.logger.Info("Added controller type: ", cc.ControllerType)
 
 	cc.UdpConnectionInfo.UdpPort = cc.userConfig.GetInt(configKeyUdpPort)
 	if (cc.UdpConnectionInfo.UdpPort <= 0) || (cc.UdpConnectionInfo.UdpPort >= 65536) {

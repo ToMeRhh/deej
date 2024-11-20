@@ -83,19 +83,14 @@ func (d *Deej) Initialize() error {
 		return fmt.Errorf("load config during init: %w", err)
 	}
 
-	if d.config.ControllerType == "udp" {
-		udp, err := NewUdpIO(d, d.logger)
-		if err != nil {
-			d.logger.Errorw("Failed to create UdpIO", "error", err)
-			return fmt.Errorf("create new UdpIO: %w", err)
-		}
-
-		d.deejComponentsController = udp
-		d.logger.Info("Created UDP deejComponentsController")
-	} else {
-		d.logger.Errorw("invalid controller type")
-		return fmt.Errorf("invalid controller type %s", d.config.ControllerType)
+	udp, err := NewUdpIO(d, d.logger)
+	if err != nil {
+		d.logger.Errorw("Failed to create UdpIO", "error", err)
+		return fmt.Errorf("create new UdpIO: %w", err)
 	}
+
+	d.deejComponentsController = udp
+	d.logger.Info("Created UDP SliderController")
 
 	// initialize the session map
 	if err := d.sessions.initialize(); err != nil {

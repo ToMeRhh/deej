@@ -139,7 +139,10 @@ func (m *sessionMap) setupOnConfigReload() {
 }
 
 func (m *sessionMap) setupOnSliderMove() {
-	eventsChannel := m.deej.deejComponentsController.SubscribeToSliderMoveEvents()
+	eventsChannel := m.
+		deej.
+		deejComponentsController.
+		SubscribeToSliderMoveEvents()
 
 	go func() {
 		for event := range eventsChannel {
