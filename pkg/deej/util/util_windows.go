@@ -6,8 +6,10 @@ import (
 	"time"
 	"unsafe"
 
+	ole "github.com/go-ole/go-ole"
 	"github.com/lxn/win"
 	"github.com/mitchellh/go-ps"
+	"github.com/moutend/go-wca"
 )
 
 const (
@@ -93,4 +95,69 @@ func getCurrentWindowProcessNames() ([]string, error) {
 	// cache & return whichever executable names we ended up with
 	lastGetCurrentWindowResult = result
 	return result, nil
+}
+
+type IPolicyConfigVista struct {
+	ole.IUnknown
+}
+
+type IPolicyConfigVistaVtbl struct {
+	ole.IUnknownVtbl
+	GetMixFormat          uintptr
+	GetDeviceFormat       uintptr
+	SetDeviceFormat       uintptr
+	GetProcessingPeriod   uintptr
+	SetProcessingPeriod   uintptr
+	GetShareMode          uintptr
+	SetShareMode          uintptr
+	GetPropertyValue      uintptr
+	SetPropertyValue      uintptr
+	SetDefaultEndpoint    uintptr
+	SetEndpointVisibility uintptr
+}
+
+func (v *IPolicyConfigVista) VTable() *IPolicyConfigVistaVtbl {
+	return (*IPolicyConfigVistaVtbl)(unsafe.Pointer(v.RawVTable))
+}
+
+func (v *IPolicyConfigVista) SetDefaultEndpoint(deviceID string, eRole uint32) (err error) {
+	err = pcvSetDefaultEndpoint(v, deviceID, eRole)
+	return
+}
+
+func pcvSetDefaultEndpoint(pcv *IPolicyConfigVista, deviceID string, eRole uint32) (err error) {
+	var ptr *uint16
+	if ptr, err = syscall.UTF16PtrFromString(deviceID); err != nil {
+		return
+	}
+	hr, _, _ := syscall.Syscall(
+		pcv.VTable().SetDefaultEndpoint,
+		3,
+		uintptr(unsafe.Pointer(pcv)),
+		uintptr(unsafe.Pointer(ptr)),
+		uintptr(uint32(eRole)))
+	if hr != 0 {
+		err = ole.NewError(hr)
+	}
+	return
+}
+
+func SetAudioDeviceByID(deviceID string) {
+	GUID_IPolicyConfigVista := ole.NewGUID("{568b9108-44bf-40b4-9006-86afe5b5a620}")
+	GUID_CPolicyConfigVistaClient := ole.NewGUID("{294935CE-F637-4E7C-A41B-AB255460B862}")
+	var policyConfig *IPolicyConfigVista
+
+	if err := ole.CoInitializeEx(0, ole.COINIT_APARTMENTTHREADED); err != nil {
+		panic(err)
+	}
+	defer ole.CoUninitialize()
+
+	if err := wca.CoCreateInstance(GUID_CPolicyConfigVistaClient, 0, wca.CLSCTX_ALL, GUID_IPolicyConfigVista, &policyConfig); err != nil {
+		panic(err)
+	}
+	defer policyConfig.Release()
+
+	if err := policyConfig.SetDefaultEndpoint(deviceID, wca.EConsole); err != nil {
+		panic(err)
+	}
 }

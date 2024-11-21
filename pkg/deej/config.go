@@ -16,7 +16,9 @@ import (
 // CanonicalConfig provides application-wide access to configuration fields,
 // as well as loading/file watching logic for deej's configuration file
 type CanonicalConfig struct {
-	SliderMapping *sliderMap
+	SliderMapping                *sliderMap
+	MuteButtonMapping            *sliderMap
+	AvailableOutoutDeviceMapping *sliderMap
 
 	UdpConnectionInfo struct {
 		UdpPort int
@@ -47,10 +49,12 @@ const (
 
 	configType = "yaml"
 
-	configKeySliderMapping       = "slider_mapping"
-	configKeyInvertSliders       = "invert_sliders"
-	configKeyNoiseReductionLevel = "noise_reduction"
-	configKeyUdpPort             = "udp_port"
+	configKeySliderMapping                = "slider_mapping"
+	configKeyMuteButtonMapping            = "mute_button_mapping"
+	configKeyAvailableOutoutDeviceMapping = "available_output_device"
+	configKeyInvertSliders                = "invert_sliders"
+	configKeyNoiseReductionLevel          = "noise_reduction"
+	configKeyUdpPort                      = "udp_port"
 
 	defaultUdpPort = 16990
 )
@@ -83,6 +87,8 @@ func NewConfig(logger *zap.SugaredLogger, notifier Notifier) (*CanonicalConfig, 
 	userConfig.AddConfigPath(userConfigPath)
 
 	userConfig.SetDefault(configKeySliderMapping, map[string][]string{})
+	userConfig.SetDefault(configKeyMuteButtonMapping, map[string][]string{})
+	userConfig.SetDefault(configKeyAvailableOutoutDeviceMapping, map[string][]string{})
 	userConfig.SetDefault(configKeyInvertSliders, false)
 
 	userConfig.SetDefault(configKeyUdpPort, defaultUdpPort)
@@ -142,6 +148,8 @@ func (cc *CanonicalConfig) Load() error {
 	cc.logger.Info("Loaded config successfully")
 	cc.logger.Infow("Config values",
 		"sliderMapping", cc.SliderMapping,
+		"muteButtonMapping", cc.MuteButtonMapping,
+		"availableOutoutDeviceMapping", cc.AvailableOutoutDeviceMapping,
 		"udpConnectionInfo", cc.UdpConnectionInfo,
 		"invertSliders", cc.InvertSliders)
 
@@ -218,6 +226,16 @@ func (cc *CanonicalConfig) populateFromVipers() error {
 	cc.SliderMapping = sliderMapFromConfigs(
 		cc.userConfig.GetStringMapStringSlice(configKeySliderMapping),
 		cc.internalConfig.GetStringMapStringSlice(configKeySliderMapping),
+	)
+	// merge the slider mappings from the user and internal configs
+	cc.MuteButtonMapping = sliderMapFromConfigs(
+		cc.userConfig.GetStringMapStringSlice(configKeyMuteButtonMapping),
+		cc.internalConfig.GetStringMapStringSlice(configKeyMuteButtonMapping),
+	)
+	// merge the slider mappings from the user and internal configs
+	cc.AvailableOutoutDeviceMapping = sliderMapFromConfigs(
+		cc.userConfig.GetStringMapStringSlice(configKeyAvailableOutoutDeviceMapping),
+		cc.internalConfig.GetStringMapStringSlice(configKeyAvailableOutoutDeviceMapping),
 	)
 
 	// get the rest of the config fields - viper saves us a lot of effort here

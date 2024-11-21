@@ -9,17 +9,13 @@
 slider_mapping:
   0: master
   1: chrome.exe
-  2: spotify.exe
-  3:
-    - pathofexile_x64.exe
-    - rocketleague.exe
-  4: discord.exe
+  2: discord.exe
 
 mute_button_mapping:
   0: master
-  1: microphone
+  1: mic
 
-available_output_devices:
+available_output_device:
   0: UUID0
   1: UUID1
 
