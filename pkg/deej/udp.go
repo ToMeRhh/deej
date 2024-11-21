@@ -304,7 +304,7 @@ func (udpio *UdpIO) handleMuteButtons(logger *zap.SugaredLogger, data []string) 
 	for buttonIndex, muteStringValue := range data {
 		muteValue, err := strconv.ParseBool(muteStringValue)
 		if err != nil {
-			logger.Fatal(err)
+			logger.Error(err)
 			continue
 		}
 		// Update the saved value and create a move event
