@@ -18,7 +18,7 @@ import (
 type CanonicalConfig struct {
 	SliderMapping                *sliderMap
 	MuteButtonMapping            *sliderMap
-	AvailableOutoutDeviceMapping *sliderMap
+	AvailableOutputDeviceMapping *sliderMap
 
 	UdpConnectionInfo struct {
 		UdpPort int
@@ -51,7 +51,7 @@ const (
 
 	configKeySliderMapping                = "slider_mapping"
 	configKeyMuteButtonMapping            = "mute_button_mapping"
-	configKeyAvailableOutoutDeviceMapping = "available_output_device"
+	configKeyAvailableOutputDeviceMapping = "available_output_device"
 	configKeyInvertSliders                = "invert_sliders"
 	configKeyNoiseReductionLevel          = "noise_reduction"
 	configKeyUdpPort                      = "udp_port"
@@ -88,7 +88,7 @@ func NewConfig(logger *zap.SugaredLogger, notifier Notifier) (*CanonicalConfig, 
 
 	userConfig.SetDefault(configKeySliderMapping, map[string][]string{})
 	userConfig.SetDefault(configKeyMuteButtonMapping, map[string][]string{})
-	userConfig.SetDefault(configKeyAvailableOutoutDeviceMapping, map[string][]string{})
+	userConfig.SetDefault(configKeyAvailableOutputDeviceMapping, map[string][]string{})
 	userConfig.SetDefault(configKeyInvertSliders, false)
 
 	userConfig.SetDefault(configKeyUdpPort, defaultUdpPort)
@@ -149,7 +149,7 @@ func (cc *CanonicalConfig) Load() error {
 	cc.logger.Infow("Config values",
 		"sliderMapping", cc.SliderMapping,
 		"muteButtonMapping", cc.MuteButtonMapping,
-		"availableOutoutDeviceMapping", cc.AvailableOutoutDeviceMapping,
+		"availableOutputDeviceMapping", cc.AvailableOutputDeviceMapping,
 		"udpConnectionInfo", cc.UdpConnectionInfo,
 		"invertSliders", cc.InvertSliders)
 
@@ -233,9 +233,9 @@ func (cc *CanonicalConfig) populateFromVipers() error {
 		cc.internalConfig.GetStringMapStringSlice(configKeyMuteButtonMapping),
 	)
 	// merge the slider mappings from the user and internal configs
-	cc.AvailableOutoutDeviceMapping = sliderMapFromConfigs(
-		cc.userConfig.GetStringMapStringSlice(configKeyAvailableOutoutDeviceMapping),
-		cc.internalConfig.GetStringMapStringSlice(configKeyAvailableOutoutDeviceMapping),
+	cc.AvailableOutputDeviceMapping = sliderMapFromConfigs(
+		cc.userConfig.GetStringMapStringSlice(configKeyAvailableOutputDeviceMapping),
+		cc.internalConfig.GetStringMapStringSlice(configKeyAvailableOutputDeviceMapping),
 	)
 
 	// get the rest of the config fields - viper saves us a lot of effort here

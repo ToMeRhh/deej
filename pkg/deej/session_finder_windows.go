@@ -271,6 +271,16 @@ func (sf *wcaSessionFinder) enumerateAndAddSessions(sessions *[]Session) error {
 
 			return fmt.Errorf("get device %d from device collection: %w", deviceIdx, err)
 		}
+
+		var endpointDeviceID string
+		// if err := endpoint.GetId(&endpointDeviceID); err != nil {
+		// 	sf.logger.Warnw("Failed to get device ID",
+		// 		"deviceIdx", deviceIdx,
+		// 		"error", err)
+
+		// 	return fmt.Errorf("get device %d from device collection: %w", deviceIdx, err)
+		// }
+
 		defer endpoint.Release()
 
 		// get its IMMEndpoint instance to figure out if it's an output device (and we need to enumerate its process sessions later)
@@ -335,6 +345,7 @@ func (sf *wcaSessionFinder) enumerateAndAddSessions(sessions *[]Session) error {
 
 		sf.logger.Debugw("Enumerated device info",
 			"deviceIdx", deviceIdx,
+			"endpointDeviceID", endpointDeviceID,
 			"deviceDescription", endpointDescription,
 			"deviceFriendlyName", endpointFriendlyName,
 			"dataFlow", dataFlow)

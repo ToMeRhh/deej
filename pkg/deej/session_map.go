@@ -358,7 +358,20 @@ func (m *sessionMap) handleMuteButtonClickedEvent(event MuteButtonClickEvent) {
 	}
 }
 
-func (m *sessionMap) handleToggleOutputDeviceClickedEvent(event ToggleOutoutDeviceClickEvent) {}
+func (m *sessionMap) handleToggleOutputDeviceClickedEvent(event ToggleOutoutDeviceClickEvent) {
+
+	m.maybeRefreshSessions()
+
+	// get the UUID of the target device to toggle to
+	selectedDevice, ok := m.deej.config.AvailableOutputDeviceMapping.get(event.selectedOutputDevice)
+
+	if !ok {
+		m.logger.Warn("Ignoring data for unknown output device slider (%d)", event.selectedOutputDevice)
+		return
+	}
+
+	util.SetAudioDeviceByID(selectedDevice[0])
+}
 
 func (m *sessionMap) targetHasSpecialTransform(target string) bool {
 	return strings.HasPrefix(target, specialTargetTransformPrefix)
