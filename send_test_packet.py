@@ -8,6 +8,7 @@ sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 
 current_output_device = 0
 sliders = []
+mute_buttons_intvars = []
 
 def send_udp_data(data):
     sock.sendto(bytes(data, "utf-8"), ("127.0.0.1", 16990))
@@ -27,6 +28,11 @@ def create_button(frame, text, command=None):
     button.pack()
     return button
 
+def create_mute_checkbox(frame, text, var,  command=None):
+    button = tk.Checkbutton(frame, text=text, onvalue=True, offvalue=False, variable=var, command=command)
+    button.pack()
+    return button
+
 def switch_output():
     global current_output_device
     send_udp_data("SwitchOutput|{}".format(current_output_device))
@@ -36,6 +42,12 @@ def send_slider_values(arg):
     print(arg)
     global sliders
     data = "Sliders|{}".format("|".join(str(x.get()) for x in sliders))
+    print("Sending: ", data)
+    send_udp_data(data)
+
+def send_mute_button_values():
+    global mute_buttons_intvars
+    data = "MuteButtons|{}".format("|".join(str(x.get()) for x in mute_buttons_intvars))
     print("Sending: ", data)
     send_udp_data(data)
 
@@ -52,8 +64,13 @@ def main():
         sliders.append(slider)
     create_button(frame, "Send slider values", send_slider_values)
 
-    mute_button1 = create_button(frame, "Mute 1")
-    mute_button2 = create_button(frame, "Mute 2")
+    global mute_buttons_intvars
+    mute_buttons_intvars.append(tk.IntVar())
+    create_mute_checkbox(frame, "Mute 1", mute_buttons_intvars[0], send_mute_button_values)
+    
+    mute_buttons_intvars.append(tk.IntVar())
+    create_mute_checkbox(frame, "Mute 2", mute_buttons_intvars[1], send_mute_button_values)
+    
     output_button = create_button(frame, "Toggle Output", switch_output)
 
     root.mainloop()
