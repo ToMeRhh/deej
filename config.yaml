@@ -7,9 +7,10 @@
 # windows only - you can use 'system' to control the "system sounds" volume
 # important: slider indexes start at 0, regardless of which analog pins you're using!
 slider_mapping:
-  0: master
-  1: chrome.exe
-  2: discord.exe
+  0: "Headphones (HyperX Cloud Flight Wireless Headset)"
+  1: "Speakers (Realtek(R) Audio)"
+  2: chrome.exe
+  3: discord.exe
 
 mute_button_mapping:
   0: master

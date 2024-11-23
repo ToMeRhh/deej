@@ -9,7 +9,7 @@ import (
 	ole "github.com/go-ole/go-ole"
 	"github.com/lxn/win"
 	"github.com/mitchellh/go-ps"
-	"github.com/moutend/go-wca"
+	wca "github.com/moutend/go-wca/pkg/wca"
 )
 
 const (
