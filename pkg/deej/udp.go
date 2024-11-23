@@ -273,9 +273,7 @@ func (udpio *UdpIO) handleSliders(logger *zap.SugaredLogger, data []string) {
 				PercentValue: normalizedScalar,
 			})
 
-			if udpio.deej.Verbose() {
-				logger.Debugw("Slider moved", "event", moveEvents[len(moveEvents)-1])
-			}
+			logger.Debugw("Slider moved", "event", moveEvents[len(moveEvents)-1])
 		}
 	}
 

@@ -198,7 +198,9 @@ func (sf *wcaSessionFinder) getDefaultAudioEndpoints() (*wca.IMMDevice, *wca.IMM
 }
 
 func (sf *wcaSessionFinder) registerDefaultDeviceChangeCallback() error {
-	sf.mmNotificationClient = &wca.IMMNotificationClient{}
+	sf.mmNotificationClient = wca.NewIMMNotificationClient(wca.IMMNotificationClientCallback{
+		OnDefaultDeviceChanged: sf.defaultDeviceChangedCallback,
+	})
 	// sf.mmNotificationClient.vTable = &wca.IMMNotificationClientVtbl{}
 
 	// fill the VTable with noops, except for OnDefaultDeviceChanged. that one's gold
@@ -520,17 +522,13 @@ func (sf *wcaSessionFinder) enumerateAndAddProcessSessions(
 	return nil
 }
 
-func (sf *wcaSessionFinder) defaultDeviceChangedCallback(
-	this *wca.IMMNotificationClient,
-	EDataFlow, eRole uint32,
-	lpcwstr uintptr,
-) (hResult uintptr) {
+func (sf *wcaSessionFinder) defaultDeviceChangedCallback(flow wca.EDataFlow, role wca.ERole, pwstrDeviceId string) error {
 
 	// filter out calls that happen in rapid succession
 	now := time.Now()
 
 	if sf.lastDefaultDeviceChange.Add(minDefaultDeviceChangeThreshold).After(now) {
-		return
+		return nil
 	}
 
 	sf.lastDefaultDeviceChange = now
@@ -544,7 +542,7 @@ func (sf *wcaSessionFinder) defaultDeviceChangedCallback(
 		sf.masterIn.markAsStale()
 	}
 
-	return
+	return nil
 }
 func (sf *wcaSessionFinder) noopCallback() (hResult uintptr) {
 	return
