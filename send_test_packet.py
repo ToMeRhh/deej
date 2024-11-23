@@ -66,10 +66,10 @@ def main():
 
     global mute_buttons_intvars
     mute_buttons_intvars.append(tk.IntVar())
-    create_mute_checkbox(frame, "Mute 1", mute_buttons_intvars[0], send_mute_button_values)
+    create_mute_checkbox(frame, "Mute current device", mute_buttons_intvars[0], send_mute_button_values)
     
     mute_buttons_intvars.append(tk.IntVar())
-    create_mute_checkbox(frame, "Mute 2", mute_buttons_intvars[1], send_mute_button_values)
+    create_mute_checkbox(frame, "Mute microphone", mute_buttons_intvars[1], send_mute_button_values)
     
     output_button = create_button(frame, "Toggle Output", switch_output)
 
