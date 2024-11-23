@@ -20,11 +20,9 @@ type UdpIO struct {
 
 	stopChannel chan bool
 
-	currentSelectedOutputDevice int
-	lastKnownNumSliders         int
-	lastKnownNumMuteButtons     int
-	currentSliderPercentValues  []float32
-	currentMuteButtonStates     []*bool
+	lastKnownNumSliders        int
+	lastKnownNumMuteButtons    int
+	currentSliderPercentValues []float32
 
 	connection *net.UDPConn
 
@@ -294,7 +292,6 @@ func (udpio *UdpIO) handleMuteButtons(logger *zap.SugaredLogger, data []string) 
 	if numMuteButtons != udpio.lastKnownNumMuteButtons {
 		logger.Infow("Detected mute buttons", "amount", numMuteButtons)
 		udpio.lastKnownNumMuteButtons = numMuteButtons
-		udpio.currentMuteButtonStates = make([]*bool, numMuteButtons)
 	}
 
 	// for each button:
