@@ -31,8 +31,8 @@ jobs:
         run: pkg/deej/scripts/windows/build-${{ matrix.mode }}.bat
         shell: cmd
       - name: Archive Windows build
-        if: runner.os == 'Windows' && matrix.mode == 'release'
-        uses: actions/upload-artifact@v2
+        if: matrix.mode == 'release'
+        uses: actions/upload-artifact@v4
         with:
           name: windows-build
           path: deej-release.exe
