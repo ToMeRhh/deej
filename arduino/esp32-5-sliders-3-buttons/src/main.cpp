@@ -20,7 +20,7 @@ using lib::input_components::MuteButton;
 using lib::input_components::Slider;
 
 const char *ssid = "TnM";
-const char *password = "tm5971088tm";
+const char *password = "";
 const char *server_address = "192.168.1.10";
 const int server_port = 5000;
 
@@ -55,12 +55,6 @@ bool get_sliders_data(std::string *out) {
       *out += "|";
     }
   }
-  *out += 100;
-  *out += "|";
-  *out += 50;
-  *out += "|";
-  *out += 10;
-  *out += "|";
   return sliders_changed;
 }
 
@@ -79,6 +73,9 @@ bool get_mute_buttons_data(std::string *out) {
 }
 
 bool get_output_device_data(std::string *out) {
+  if (!audio_device_selector) {
+    return false;
+  }
   auto [changed, value] = audio_device_selector->getValue();
   *out = "SwitchOutput|" + value;
   return changed;
@@ -108,12 +105,12 @@ void setup() {
   }
   Serial.println("Mute Buttons initialized!");
 
-  audio_device_selector = new AudioDeviceSelector(AUDIO_DEVICE_SELECTOR_PIN);
-  Serial.println("Audio device selector button initialized!");
+  // audio_device_selector = new AudioDeviceSelector(AUDIO_DEVICE_SELECTOR_PIN);
+  // Serial.println("Audio device selector button initialized!");
 
   Serial.println("Initializing server...");
   // send a file when /index is requested
-  server.on("/index", HTTP_ANY, [](AsyncWebServerRequest *request) {
+  server.on("/index", HTTP_GET, [](AsyncWebServerRequest *request) {
     std::string *sliders = new std::string();
     get_sliders_data(sliders);
     request->send(200, "text/plain", sliders->c_str());
