@@ -2,7 +2,7 @@ This is a cloned fork of the Deej project (https://github.com/omriharel/deej); a
 
 The main significant changes in the fork, from the original Deej project:
 1. UDP support
-2. Support for mute buttons
+2. Support for mute buttons (ones that actually mutes, not just lowers the volume to 0)
 3. Support for output device toggle (i.e. toggle between sound devices)
 4. A quick and dirty python UI for testing, while developing the Go code
 
@@ -73,11 +73,13 @@ available_output_device:
 
 
 ## The modified Deej protocol
-The deej protocol is very simple: each packet must consist of a command name, followed by a series of numbers between 0 and 1023 for each slider, separated by a `|`. No newline is necessary at the end of each packet.
+The deej protocol is very simple: each packet must consist of a command name, followed by a series of values separated by a `|`. No newline is necessary at the end of each packet.
 
 The available commands are:
 > Sliders
+> 
 > MuteButtons
+> 
 > SwitchOutput
 
 ### Examples
