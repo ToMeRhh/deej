@@ -1,4 +1,6 @@
 #include <Arduino.h>
+#include <AsyncTCP.h>
+#include <ESPAsyncWebServer.h>
 #include <WiFi.h>
 #include <audio_device_selector.h>
 #include <mute_button.h>
@@ -22,6 +24,8 @@ const char *password = "tm5971088tm";
 const char *server_address = "192.168.1.10";
 const int server_port = 5000;
 
+AsyncWebServer server(80);
+
 VolumeControllerApi *api = nullptr;
 std::vector<MuteButton *> *mute_buttons = nullptr;
 std::vector<Slider *> *sliders = nullptr;
@@ -38,6 +42,46 @@ void setupWifi() {
   Serial.println("Connected to WiFi!");
   Serial.println("IP address: ");
   Serial.println(WiFi.localIP());
+}
+
+bool get_sliders_data(std::string *out) {
+  *out = "Sliders|";
+  bool sliders_changed;
+  for (int i = 0; i < sliders->size(); i++) {
+    auto [changed, value] = sliders->at(i)->getValue();
+    sliders_changed |= changed;
+    *out += value;
+    if (i < sliders->size() - 1) {
+      *out += "|";
+    }
+  }
+  *out += 100;
+  *out += "|";
+  *out += 50;
+  *out += "|";
+  *out += 10;
+  *out += "|";
+  return sliders_changed;
+}
+
+bool get_mute_buttons_data(std::string *out) {
+  *out = "MuteButtons|";
+  bool mute_buttons_changed;
+  for (int i = 0; i < mute_buttons->size(); i++) {
+    auto [changed, value] = mute_buttons->at(i)->getValue();
+    mute_buttons_changed |= changed;
+    *out += value;
+    if (i < mute_buttons->size() - 1) {
+      *out += "|";
+    }
+  }
+  return mute_buttons_changed;
+}
+
+bool get_output_device_data(std::string *out) {
+  auto [changed, value] = audio_device_selector->getValue();
+  *out = "SwitchOutput|" + value;
+  return changed;
 }
 
 void setup() {
@@ -66,40 +110,34 @@ void setup() {
 
   audio_device_selector = new AudioDeviceSelector(AUDIO_DEVICE_SELECTOR_PIN);
   Serial.println("Audio device selector button initialized!");
+
+  Serial.println("Initializing server...");
+  // send a file when /index is requested
+  server.on("/index", HTTP_ANY, [](AsyncWebServerRequest *request) {
+    std::string *sliders = new std::string();
+    get_sliders_data(sliders);
+    request->send(200, "text/plain", sliders->c_str());
+  });
+  Serial.println("Starting server...");
+  server.begin();
 }
 
 void loop() {
-  std::string mute_buttons_data = "MuteButtons|";
-  bool mute_buttons_changed;
-  for (int i = 0; i < mute_buttons->size(); i++) {
-    auto [changed, value] = mute_buttons->at(i)->getValue();
-    mute_buttons_changed |= changed;
-    mute_buttons_data += value;
-    if (i < mute_buttons->size() - 1) {
-      mute_buttons_data += "|";
-    }
-  }
-  if (mute_buttons_changed) {
+  std::string mute_buttons_data;
+  if (bool mute_buttons_changed = get_mute_buttons_data(&mute_buttons_data);
+      mute_buttons_changed) {
     api->sendUdpData(mute_buttons_data);
   }
 
-  std::string sliders_data = "Sliders|";
-  bool sliders_changed;
-  for (int i = 0; i < sliders->size(); i++) {
-    auto [changed, value] = sliders->at(i)->getValue();
-    sliders_changed |= changed;
-    sliders_data += value;
-    if (i < sliders->size() - 1) {
-      sliders_data += "|";
-    }
-  }
-  if (sliders_changed) {
+  std::string sliders_data;
+  if (bool sliders_changed = get_sliders_data(&sliders_data); sliders_changed) {
     api->sendUdpData(sliders_data);
   }
 
-  if (auto [changed, value] = audio_device_selector->getValue(); changed) {
-    char data[20] = "SwitchOutput|";
-    api->sendUdpData(strcat(data, std::to_string(value).c_str()));
+  std::string output_device_data;
+  if (bool output_device_changed = get_output_device_data(&output_device_data);
+      output_device_changed) {
+    api->sendUdpData(output_device_data);
   }
 
   delay(100);
