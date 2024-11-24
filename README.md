@@ -2,7 +2,7 @@ This is a cloned fork of the Deej project (https://github.com/omriharel/deej); a
 
 The main significant changes in the fork, from the original Deej project:
 1. UDP support
-2. Support for mute buttons
+2. Support for mute buttons (ones that actually mutes, not just lowers the volume to 0)
 3. Support for output device toggle (i.e. toggle between sound devices)
 4. A quick and dirty python UI for testing, while developing the Go code
 
@@ -61,9 +61,16 @@ available_output_device:
 ```
 
 ### Notes on target names
-**TODO: Briefly document on how to get device names.**
-* process names are case-insensitive
-* you can use 'master' to indicate the master channel, or a list of process names to create a group
+To get device-id and device name on windows, write this in a PowerShell terminal:
+```powershell
+ Get-CimInstance Win32_PnPEntity | ? { $_.PNPClass -eq "AudioEndpoint" } | Select-Object -Property PNPDeviceID, Name | ForEach-Object { Write-Host "$($_.PNPDeviceID.split('\')[2]) - $($_.Name)" }
+```
+
+
+Additionally:
+* process names are **not** case sensitive
+* you can use 'master' to indicate the master channel (i.e. the currently selected channel in the mixer)
+* you can indicate a list of process names to create a group and control them together
 * you can use 'mic' to control your mic input level (uses the default recording device)
 * you can use 'deej.unmapped' to control all apps that aren't bound to any slider (this ignores master, system, mic and device-targeting sessions)
 * windows only - you can use 'deej.current' to control the currently active app (whether full-screen or not)
@@ -73,11 +80,13 @@ available_output_device:
 
 
 ## The modified Deej protocol
-The deej protocol is very simple: each packet must consist of a command name, followed by a series of numbers between 0 and 1023 for each slider, separated by a `|`. No newline is necessary at the end of each packet.
+The deej protocol is very simple: each packet must consist of a command name, followed by a series of values separated by a `|`. No newline is necessary at the end of each packet.
 
 The available commands are:
 > Sliders
+> 
 > MuteButtons
+> 
 > SwitchOutput
 
 ### Examples
