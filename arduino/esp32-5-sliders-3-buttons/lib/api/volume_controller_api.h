@@ -12,6 +12,7 @@ class VolumeControllerApi {
  public:
   VolumeControllerApi(const char* server_ip, const int _server_port)
       : _server_ip(server_ip), _server_port(_server_port) {}
+
   void sendUdpData(const std::string& data);
 
  private:

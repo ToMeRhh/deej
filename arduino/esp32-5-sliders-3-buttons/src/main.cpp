@@ -59,6 +59,7 @@ void setup() {
   Serial.println("Sliders initialized!");
 
   mute_buttons = new std::vector<MuteButton *>();
+  // mute_buttons->push_back(new MuteButton(0, MUTE_BUTTON_0_PIN));
   for (auto *button : *mute_buttons) {
     button->init();
   }
@@ -69,29 +70,25 @@ void setup() {
 }
 
 void loop() {
-  std::string mute_buttons_data = "MuteButtons|";
+  std::string mute_buttons_data = "MuteButtons";
   bool mute_buttons_changed;
   for (int i = 0; i < mute_buttons->size(); i++) {
     auto [changed, value] = mute_buttons->at(i)->getValue();
     mute_buttons_changed |= changed;
-    mute_buttons_data += value;
-    if (i < mute_buttons->size() - 1) {
-      mute_buttons_data += "|";
-    }
+    mute_buttons_data += "|";
+    mute_buttons_data += std::to_string(value);
   }
   if (mute_buttons_changed) {
     api->sendUdpData(mute_buttons_data);
   }
 
-  std::string sliders_data = "Sliders|";
+  std::string sliders_data = "Sliders";
   bool sliders_changed;
   for (int i = 0; i < sliders->size(); i++) {
     auto [changed, value] = sliders->at(i)->getValue();
     sliders_changed |= changed;
-    sliders_data += value;
-    if (i < sliders->size() - 1) {
-      sliders_data += "|";
-    }
+    sliders_data += "|";
+    sliders_data += std::to_string(value);
   }
   if (sliders_changed) {
     api->sendUdpData(sliders_data);
