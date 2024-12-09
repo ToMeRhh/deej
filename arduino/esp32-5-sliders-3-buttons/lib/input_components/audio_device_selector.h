@@ -8,17 +8,26 @@ namespace input_components {
 
 class AudioDeviceSelector {
  public:
-  AudioDeviceSelector(const int gpioPinNumber)
-      : _gpioPinNumber(gpioPinNumber), _selected_device(0) {}
+  AudioDeviceSelector(int button_gpio_pin, int dev_0_gpio_pin,
+                      int dev_1_gpio_pin)
+      : _button_gpio_pin(button_gpio_pin),
+        _dev_0_gpio_pin(dev_0_gpio_pin),
+        _dev_1_gpio_pin(dev_1_gpio_pin),
+        _selected_device(0) {}
 
   // Initializes this instance. Should be called at 'setup()'.
   void init();
+
+  // Activates the led corresponds to the current active device.
+  void setActiveLed();
 
   std::tuple<bool, int> getValue();
   std::tuple<std::string, std::string> getState();
 
  private:
-  const int _gpioPinNumber;
+  const int _button_gpio_pin;
+  const int _dev_0_gpio_pin;
+  const int _dev_1_gpio_pin;
   int _selected_device;
 };
 

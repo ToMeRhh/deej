@@ -10,7 +10,9 @@
 #include <vector>
 
 #define OUTPUT_DEVICE_0_MASTER_VOLUME_SLIDER_PIN 34
-#define AUDIO_DEVICE_SELECTOR_PIN 17
+#define AUDIO_DEVICE_SELECTOR_BUTTON_PIN 17
+#define AUDIO_DEVICE_SELECTOR_BUTTON_DEV_0_PIN 18
+#define AUDIO_DEVICE_SELECTOR_BUTTON_DEV_1_PIN 19
 
 using lib::api::VolumeControllerApi;
 using lib::input_components::AudioDeviceSelector;
@@ -65,7 +67,9 @@ void setup() {
   }
   Serial.println("Mute Buttons initialized!");
 
-  audio_device_selector = new AudioDeviceSelector(AUDIO_DEVICE_SELECTOR_PIN);
+  audio_device_selector = new AudioDeviceSelector(
+      AUDIO_DEVICE_SELECTOR_BUTTON_PIN, AUDIO_DEVICE_SELECTOR_BUTTON_DEV_0_PIN,
+      AUDIO_DEVICE_SELECTOR_BUTTON_DEV_1_PIN);
   Serial.println("Audio device selector button initialized!");
 }
 
