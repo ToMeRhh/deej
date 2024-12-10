@@ -7,7 +7,7 @@ namespace input_components {
 
 void AudioDeviceSelector::init() {
   // Configure button pin as input with pull-up resistor
-  pinMode(_button_gpio_pin, INPUT_PULLUP);
+  pinMode(_button_gpio_pin, INPUT);
 }
 
 void AudioDeviceSelector::setActiveLed() {
@@ -21,9 +21,9 @@ void AudioDeviceSelector::setActiveLed() {
 }
 
 std::tuple<bool, int> AudioDeviceSelector::getValue() {
-  if (digitalRead(_button_gpio_pin) == LOW) {
+  if (digitalRead(_button_gpio_pin) == HIGH) {
     // Debounce if needed.
-    while (digitalRead(_button_gpio_pin) == LOW) {
+    while (digitalRead(_button_gpio_pin) == HIGH) {
       delay(100);
     }
     _selected_device ^= 1;
