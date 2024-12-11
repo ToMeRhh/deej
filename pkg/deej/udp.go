@@ -177,6 +177,7 @@ func (udpio *UdpIO) setupOnConfigReload() {
 				go func() {
 					<-time.After(stopDelay)
 					udpio.lastKnownNumSliders = 0
+					udpio.lastKnownNumMuteButtons = 0
 				}()
 
 				// if connection params have changed, attempt to stop and start the connection
