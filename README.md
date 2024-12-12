@@ -100,7 +100,7 @@ Sliders|0|512|512|0|0
 If you have 2 mute buttons, 2 are muted and the last one is not, the packet would look like this:
 
 ```text
-MuteButton|true|true|false
+MuteButtons|true|true|false
 ```
 #### Toggle output device
 To choose the device at index 1 in the config, send the packet:
