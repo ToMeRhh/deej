@@ -10,7 +10,7 @@ import (
 
 	"go.uber.org/zap"
 
-	"github.com/omriharel/deej/pkg/deej/util"
+	"github.com/tomerhh/deej/pkg/deej/util"
 )
 
 // UdpIO provides a deej-aware abstraction layer to managing UDP connections

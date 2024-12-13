@@ -148,7 +148,8 @@ func SetAudioDeviceByID(deviceID string) {
 	var policyConfig *IPolicyConfigVista
 
 	if err := ole.CoInitializeEx(0, ole.COINIT_APARTMENTTHREADED); err != nil {
-		panic(err)
+		// panic(err)
+		return
 	}
 	defer ole.CoUninitialize()
 
