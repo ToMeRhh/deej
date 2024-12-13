@@ -16,9 +16,9 @@
 // #define SLIDER_4_PIN 5
 #define MUTE_BUTTON_0_PIN 21
 #define MUTE_BUTTON_1_PIN 19
-#define AUDIO_DEVICE_SELECTOR_BUTTON_PIN 18
-#define AUDIO_DEVICE_SELECTOR_BUTTON_DEV_0_PIN 18
-#define AUDIO_DEVICE_SELECTOR_BUTTON_DEV_1_PIN 19
+#define AUDIO_DEVICE_SELECTOR_BUTTON_PIN 22
+#define AUDIO_DEVICE_SELECTOR_BUTTON_DEV_0_PIN 0
+#define AUDIO_DEVICE_SELECTOR_BUTTON_DEV_1_PIN 0
 
 using lib::api::VolumeControllerApi;
 using lib::input_components::AudioDeviceSelector;
@@ -28,7 +28,7 @@ using lib::input_components::Slider;
 const char *ssid = "TnM";
 const char *password = "tm5971088tm";
 const char *server_address = "192.168.1.10";
-const int server_port = 5000;
+const int server_port = 16990;
 
 VolumeControllerApi *api = nullptr;
 std::vector<MuteButton *> *mute_buttons = nullptr;
@@ -114,5 +114,5 @@ void loop() {
     api->sendUdpData(strcat(data, std::to_string(value).c_str()));
   }
 
-  delay(100);
+  delay(500);
 }
