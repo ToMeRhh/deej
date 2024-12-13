@@ -215,7 +215,7 @@ func (s *masterSession) SetMute(mute bool) error {
 	}
 
 	if err := s.volume.SetMute(mute, s.eventCtx); err != nil {
-		s.logger.Warnw("Failed to set master session volume",
+		s.logger.Warnw("Failed to set master session mute",
 			"error", err,
 			"mute", mute)
 
