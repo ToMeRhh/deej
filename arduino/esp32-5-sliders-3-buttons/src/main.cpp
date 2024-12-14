@@ -9,8 +9,16 @@
 #include <string>
 #include <vector>
 
-#define OUTPUT_DEVICE_0_MASTER_VOLUME_SLIDER_PIN 34
-#define AUDIO_DEVICE_SELECTOR_PIN 17
+#define SLIDER_0_PIN 34
+#define SLIDER_1_PIN 35
+#define SLIDER_2_PIN 32
+#define SLIDER_3_PIN 33
+// #define SLIDER_4_PIN 5
+#define MUTE_BUTTON_0_PIN 21
+#define MUTE_BUTTON_1_PIN 19
+#define AUDIO_DEVICE_SELECTOR_BUTTON_PIN 22
+#define AUDIO_DEVICE_SELECTOR_BUTTON_DEV_0_PIN 0
+#define AUDIO_DEVICE_SELECTOR_BUTTON_DEV_1_PIN 0
 
 using lib::api::VolumeControllerApi;
 using lib::input_components::AudioDeviceSelector;
@@ -20,7 +28,7 @@ using lib::input_components::Slider;
 const char *ssid = "TnM";
 const char *password = "tm5971088tm";
 const char *server_address = "192.168.1.10";
-const int server_port = 5000;
+const int server_port = 16990;
 
 VolumeControllerApi *api = nullptr;
 std::vector<MuteButton *> *mute_buttons = nullptr;
@@ -52,20 +60,27 @@ void setup() {
   Serial.println("Initializing components:");
 
   sliders = new std::vector<Slider *>();
-  sliders->push_back(new Slider(0, OUTPUT_DEVICE_0_MASTER_VOLUME_SLIDER_PIN));
+  sliders->push_back(new Slider(0, SLIDER_0_PIN));
+  sliders->push_back(new Slider(1, SLIDER_1_PIN));
+  sliders->push_back(new Slider(2, SLIDER_2_PIN));
+  sliders->push_back(new Slider(3, SLIDER_3_PIN));
+  // sliders->push_back(new Slider(4, SLIDER_4_PIN));
   for (auto *slider : *sliders) {
     slider->init();
   }
   Serial.println("Sliders initialized!");
 
   mute_buttons = new std::vector<MuteButton *>();
-  // mute_buttons->push_back(new MuteButton(0, MUTE_BUTTON_0_PIN));
+  mute_buttons->push_back(new MuteButton(0, MUTE_BUTTON_0_PIN));
+  mute_buttons->push_back(new MuteButton(1, MUTE_BUTTON_1_PIN));
   for (auto *button : *mute_buttons) {
     button->init();
   }
   Serial.println("Mute Buttons initialized!");
 
-  audio_device_selector = new AudioDeviceSelector(AUDIO_DEVICE_SELECTOR_PIN);
+  audio_device_selector = new AudioDeviceSelector(
+      AUDIO_DEVICE_SELECTOR_BUTTON_PIN, AUDIO_DEVICE_SELECTOR_BUTTON_DEV_0_PIN,
+      AUDIO_DEVICE_SELECTOR_BUTTON_DEV_1_PIN);
   Serial.println("Audio device selector button initialized!");
 }
 
@@ -99,5 +114,5 @@ void loop() {
     api->sendUdpData(strcat(data, std::to_string(value).c_str()));
   }
 
-  delay(100);
+  delay(500);
 }

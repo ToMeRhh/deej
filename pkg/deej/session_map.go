@@ -7,8 +7,8 @@ import (
 	"sync"
 	"time"
 
-	"github.com/omriharel/deej/pkg/deej/util"
 	"github.com/thoas/go-funk"
+	"github.com/tomerhh/deej/pkg/deej/util"
 	"go.uber.org/zap"
 )
 
@@ -301,9 +301,10 @@ func (m *sessionMap) handleSliderMoveEvent(event SliderMoveEvent) {
 func (m *sessionMap) handleMuteButtonClickedEvent(event MuteButtonClickEvent) {
 
 	m.maybeRefreshSessions()
-
+	m.logger.Infow("Handling mute event", "event", event)
 	// get the targets mapped to this slider from the config
 	targets, ok := m.deej.config.MuteButtonMapping.get(event.MuteButtonID)
+	m.logger.Infof("targets: %s", strings.Join(targets, ","))
 
 	// if slider not found in config, silently ignore
 	if !ok {
@@ -326,6 +327,7 @@ func (m *sessionMap) handleMuteButtonClickedEvent(event MuteButtonClickEvent) {
 
 			// check the map for matching sessions
 			sessions, ok := m.get(resolvedTarget)
+			m.logger.Infof("testing target: %s", sessions)
 
 			// no sessions matching this target - move on
 			if !ok {
@@ -369,8 +371,9 @@ func (m *sessionMap) handleToggleOutputDeviceClickedEvent(event ToggleOutoutDevi
 		m.logger.Warn("Ignoring data for unknown output device slider (%d)", event.selectedOutputDevice)
 		return
 	}
-
+	m.logger.Infof("Changing selected device to: %s", selectedDevice)
 	util.SetAudioDeviceByID(selectedDevice[0])
+	m.refreshSessions(true)
 }
 
 func (m *sessionMap) targetHasSpecialTransform(target string) bool {

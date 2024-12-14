@@ -7,10 +7,9 @@
 # windows only - you can use 'system' to control the "system sounds" volume
 # important: slider indexes start at 0, regardless of which analog pins you're using!
 slider_mapping:
-  0: "Headphones (HyperX Cloud Flight Wireless Headset)"
+  0: "Headphones (HyperX Cloud III Wireless)"
   1: "Speakers (Realtek(R) Audio)"
-  2: chrome.exe
-  3: discord.exe
+  2: mic
 
 mute_button_mapping:
   0: master
@@ -18,7 +17,7 @@ mute_button_mapping:
 
 available_output_device:
   0: "{0.0.0.00000000}.{02870d54-9a1a-4478-a1a9-ced980df96fe}"
-  1: "{0.0.0.00000000}.{717a777c-1b75-456b-bde9-2f4c6c4bf866}"
+  1: "{0.0.0.00000000}.{2C262C62-793B-460F-8851-DC8C5AC58F87}"
 
 # set this to true if you want the controls inverted (i.e. top is 0%, bottom is 100%)
 invert_sliders: false

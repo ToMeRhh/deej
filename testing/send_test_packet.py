@@ -11,6 +11,7 @@ sliders = []
 mute_buttons_intvars = []
 
 def send_udp_data(data):
+    print("Sending: {}".format(data))
     sock.sendto(bytes(data, "utf-8"), ("127.0.0.1", 16990))
     
 
@@ -18,13 +19,13 @@ def create_slider(frame, label_text, command):
     label = tk.Label(frame, text=label_text)
     label.pack()
 
-    slider = tk.Scale(frame, from_=0, to=1023, orient=tk.HORIZONTAL, command=command)
+    slider = tk.Scale(frame, from_=0, to=1023, orient=tk.HORIZONTAL, command=command, length=300)
     slider.set(1023)
     slider.pack()
     return slider
 
 def create_button(frame, text, command=None):
-    button = tk.Button(frame, text=text, command=command)
+    button = tk.Button(frame, text=text, command=lambda: command(-1))
     button.pack()
     return button
 
@@ -33,22 +34,19 @@ def create_mute_checkbox(frame, text, var,  command=None):
     button.pack()
     return button
 
-def switch_output():
+def switch_output(unused):
     global current_output_device
     send_udp_data("SwitchOutput|{}".format(current_output_device))
     current_output_device = (current_output_device + 1) % 2
 
-def send_slider_values(arg):
-    print(arg)
+def send_slider_values(_):
     global sliders
     data = "Sliders|{}".format("|".join(str(x.get()) for x in sliders))
-    print("Sending: ", data)
     send_udp_data(data)
 
 def send_mute_button_values():
     global mute_buttons_intvars
     data = "MuteButtons|{}".format("|".join(str(x.get()) for x in mute_buttons_intvars))
-    print("Sending: ", data)
     send_udp_data(data)
 
 def main():

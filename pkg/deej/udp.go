@@ -10,7 +10,7 @@ import (
 
 	"go.uber.org/zap"
 
-	"github.com/omriharel/deej/pkg/deej/util"
+	"github.com/tomerhh/deej/pkg/deej/util"
 )
 
 // UdpIO provides a deej-aware abstraction layer to managing UDP connections
@@ -177,6 +177,7 @@ func (udpio *UdpIO) setupOnConfigReload() {
 				go func() {
 					<-time.After(stopDelay)
 					udpio.lastKnownNumSliders = 0
+					udpio.lastKnownNumMuteButtons = 0
 				}()
 
 				// if connection params have changed, attempt to stop and start the connection
