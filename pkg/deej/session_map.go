@@ -301,7 +301,7 @@ func (m *sessionMap) handleSliderMoveEvent(event SliderMoveEvent) {
 func (m *sessionMap) handleMuteButtonClickedEvent(event MuteButtonClickEvent) {
 
 	m.maybeRefreshSessions()
-	m.logger.Infof("Handling mute event for %d", event.MuteButtonID)
+	m.logger.Infow("Handling mute event", "event", event)
 	// get the targets mapped to this slider from the config
 	targets, ok := m.deej.config.MuteButtonMapping.get(event.MuteButtonID)
 	m.logger.Infof("targets: %s", strings.Join(targets, ","))
