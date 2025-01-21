@@ -8,11 +8,10 @@ namespace input_components {
 
 class AudioDeviceSelector {
  public:
-  AudioDeviceSelector(int button_gpio_pin, int dev_0_gpio_pin,
-                      int dev_1_gpio_pin)
+  AudioDeviceSelector(int button_gpio_pin, int dev_0_led_pin, int dev_1_led_pin)
       : _button_gpio_pin(button_gpio_pin),
-        _dev_0_gpio_pin(dev_0_gpio_pin),
-        _dev_1_gpio_pin(dev_1_gpio_pin),
+        _dev_0_led_pin(dev_0_led_pin),
+        _dev_1_led_pin(dev_1_led_pin),
         _selected_device(0) {}
 
   // Initializes this instance. Should be called at 'setup()'.
@@ -26,8 +25,8 @@ class AudioDeviceSelector {
 
  private:
   const int _button_gpio_pin;
-  const int _dev_0_gpio_pin;
-  const int _dev_1_gpio_pin;
+  const int _dev_0_led_pin;
+  const int _dev_1_led_pin;
   int _selected_device;
 };
 

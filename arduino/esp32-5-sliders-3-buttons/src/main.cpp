@@ -12,13 +12,13 @@
 #define SLIDER_0_PIN 34
 #define SLIDER_1_PIN 35
 #define SLIDER_2_PIN 32
-#define SLIDER_3_PIN 33
-// #define SLIDER_4_PIN 5
-#define MUTE_BUTTON_0_PIN 21
-#define MUTE_BUTTON_1_PIN 19
-#define AUDIO_DEVICE_SELECTOR_BUTTON_PIN 22
-#define AUDIO_DEVICE_SELECTOR_BUTTON_DEV_0_PIN 0
-#define AUDIO_DEVICE_SELECTOR_BUTTON_DEV_1_PIN 0
+#define SLIDER_3_PIN 36
+#define SLIDER_4_PIN 33
+#define MUTE_BUTTON_0_PIN 4
+#define MUTE_BUTTON_1_PIN 14
+#define AUDIO_DEVICE_SELECTOR_BUTTON_PIN 5
+#define AUDIO_DEVICE_SELECTOR_BUTTON_DEV_0_LED_PIN 18
+#define AUDIO_DEVICE_SELECTOR_BUTTON_DEV_1_LED_PIN 19
 
 using lib::api::VolumeControllerApi;
 using lib::input_components::AudioDeviceSelector;
@@ -64,7 +64,7 @@ void setup() {
   sliders->push_back(new Slider(1, SLIDER_1_PIN));
   sliders->push_back(new Slider(2, SLIDER_2_PIN));
   sliders->push_back(new Slider(3, SLIDER_3_PIN));
-  // sliders->push_back(new Slider(4, SLIDER_4_PIN));
+  sliders->push_back(new Slider(4, SLIDER_4_PIN));
   for (auto *slider : *sliders) {
     slider->init();
   }
@@ -78,9 +78,10 @@ void setup() {
   }
   Serial.println("Mute Buttons initialized!");
 
-  audio_device_selector = new AudioDeviceSelector(
-      AUDIO_DEVICE_SELECTOR_BUTTON_PIN, AUDIO_DEVICE_SELECTOR_BUTTON_DEV_0_PIN,
-      AUDIO_DEVICE_SELECTOR_BUTTON_DEV_1_PIN);
+  audio_device_selector =
+      new AudioDeviceSelector(AUDIO_DEVICE_SELECTOR_BUTTON_PIN,
+                              AUDIO_DEVICE_SELECTOR_BUTTON_DEV_0_LED_PIN,
+                              AUDIO_DEVICE_SELECTOR_BUTTON_DEV_1_LED_PIN);
   Serial.println("Audio device selector button initialized!");
 }
 
@@ -114,5 +115,5 @@ void loop() {
     api->sendUdpData(strcat(data, std::to_string(value).c_str()));
   }
 
-  delay(500);
+  delay(150);
 }

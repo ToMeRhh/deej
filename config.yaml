@@ -9,7 +9,9 @@
 slider_mapping:
   0: "Headphones (HyperX Cloud III Wireless)"
   1: "Speakers (Realtek(R) Audio)"
-  2: mic
+  2: chrome.exe
+  3: discord.exe
+  3: Warzone.exe
 
 mute_button_mapping:
   0: master

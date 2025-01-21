@@ -16,7 +16,7 @@ std::tuple<bool, bool> MuteButton::getValue() {
   if (digitalRead(_gpioPinNumber) == LOW) {
     // Debounce if needed.
     while (digitalRead(_gpioPinNumber) == LOW) {
-      delay(100);
+      delay(40);
     }
     this->_is_pressed = !this->_is_pressed;
     return std::tuple(true, this->_is_pressed);
