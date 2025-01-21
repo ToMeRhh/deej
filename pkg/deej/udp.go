@@ -240,18 +240,18 @@ func (udpio *UdpIO) handleSliders(logger *zap.SugaredLogger, data []string) {
 	moveEvents := []SliderMoveEvent{}
 	for sliderIdx, stringValue := range data {
 
-		// convert string values to integers ("1023" -> 1023)
+		// convert string values to integers ("4095" -> 4095)
 		number, _ := strconv.Atoi(string(stringValue))
 
 		// turns out the first line could come out dirty sometimes (i.e. "4558|925|41|643|220")
 		// so let's check the first number for correctness just in case
-		if sliderIdx == 0 && number > 1023 {
+		if sliderIdx == 0 && number > 4095 {
 			udpio.logger.Debugw("Got malformed packet from UDP, ignoring", "packet", data)
 			return
 		}
 
 		// map the value from raw to a "dirty" float between 0 and 1 (e.g. 0.15451...)
-		dirtyFloat := float32(number) / 1023.0
+		dirtyFloat := float32(number) / 4095.0
 
 		// normalize it to an actual volume scalar between 0.0 and 1.0 with 2 points of precision
 		normalizedScalar := util.NormalizeScalar(dirtyFloat)

@@ -19,8 +19,8 @@ def create_slider(frame, label_text, command):
     label = tk.Label(frame, text=label_text)
     label.pack()
 
-    slider = tk.Scale(frame, from_=0, to=1023, orient=tk.HORIZONTAL, command=command, length=300)
-    slider.set(1023)
+    slider = tk.Scale(frame, from_=0, to=4095, orient=tk.HORIZONTAL, command=command, length=300)
+    slider.set(4095)
     slider.pack()
     return slider
 

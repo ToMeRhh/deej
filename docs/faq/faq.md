@@ -191,13 +191,13 @@ There are several things you want to note here:
 
 - Each line contains a total amount of numbers equal to how many potentiometers you have defined in the sketch you uploaded.
   - The above screenshot, for instance, represents 6 sliders. The last line doesn't count, it's still being written!
-- Each number corresponds to a certain pot, from left to right. Its value is a number between 0 and 1023, where 0 means "the pot is at 0%" and 1023 means "the pot is at 100%".
+- Each number corresponds to a certain pot, from left to right. Its value is a number between 0 and 4095, where 0 means "the pot is at 0%" and 4095 means "the pot is at 100%".
   - In the above screenshot:
     - the first pot sits at about 50%
     - the second and fourth pots are slightly below that
     - the third pot is slightly above that
     - the fifth and sixth pots are at 100%
-- Try moving your pots! They should behave as explained above, with each one being adjustable between the range of 0 and 1023. If this isn't the case, you might have miswired your potentiometers.
+- Try moving your pots! They should behave as explained above, with each one being adjustable between the range of 0 and 4095. If this isn't the case, you might have miswired your potentiometers.
 - Analog values from pots are slightly different between lines, even when the pot isn't being moved. **This is normal!** Since this is an analog signal, it is subject to some noise and interference. deej internally manages that to ensure that volume only changes when you mean to change it.
   - If your analog values are "jumping" by a significantly larger margin than shown here, you may have miswired your potentiometers.
 
