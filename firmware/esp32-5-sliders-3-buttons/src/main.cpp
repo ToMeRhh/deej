@@ -15,7 +15,9 @@
 #define SLIDER_3_PIN 36
 #define SLIDER_4_PIN 33
 #define MUTE_BUTTON_0_PIN 4
+#define MUTE_BUTTON_0_LED_PIN 12
 #define MUTE_BUTTON_1_PIN 14
+#define MUTE_BUTTON_1_LED_PIN 21
 #define AUDIO_DEVICE_SELECTOR_BUTTON_PIN 5
 #define AUDIO_DEVICE_SELECTOR_BUTTON_DEV_0_LED_PIN 18
 #define AUDIO_DEVICE_SELECTOR_BUTTON_DEV_1_LED_PIN 19
@@ -71,8 +73,10 @@ void setup() {
   Serial.println("Sliders initialized!");
 
   mute_buttons = new std::vector<MuteButton *>();
-  mute_buttons->push_back(new MuteButton(0, MUTE_BUTTON_0_PIN));
-  mute_buttons->push_back(new MuteButton(1, MUTE_BUTTON_1_PIN));
+  mute_buttons->push_back(
+      new MuteButton(0, MUTE_BUTTON_0_PIN, MUTE_BUTTON_0_LED_PIN));
+  mute_buttons->push_back(
+      new MuteButton(1, MUTE_BUTTON_1_PIN, MUTE_BUTTON_1_LED_PIN));
   for (auto *button : *mute_buttons) {
     button->init();
   }
@@ -82,6 +86,7 @@ void setup() {
       new AudioDeviceSelector(AUDIO_DEVICE_SELECTOR_BUTTON_PIN,
                               AUDIO_DEVICE_SELECTOR_BUTTON_DEV_0_LED_PIN,
                               AUDIO_DEVICE_SELECTOR_BUTTON_DEV_1_LED_PIN);
+  audio_device_selector->init();
   Serial.println("Audio device selector button initialized!");
 }
 

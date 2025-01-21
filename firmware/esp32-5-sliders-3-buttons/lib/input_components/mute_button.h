@@ -8,9 +8,10 @@ namespace input_components {
 
 class MuteButton {
  public:
-  MuteButton(int button_index, int gpioPinNumber)
+  MuteButton(int button_index, int button_gpio_pin, int led_gpio_pin)
       : _button_index(button_index),
-        _gpioPinNumber(gpioPinNumber),
+        _button_gpio_pin(button_gpio_pin),
+        _led_gpio_pin(led_gpio_pin),
         _is_pressed(false) {}
 
   // Initializes this instance. Should be called at 'setup()'.
@@ -22,7 +23,8 @@ class MuteButton {
   const int _button_index;
 
  private:
-  const int _gpioPinNumber;
+  const int _button_gpio_pin;
+  const int _led_gpio_pin;
   bool _is_pressed;
 };
 

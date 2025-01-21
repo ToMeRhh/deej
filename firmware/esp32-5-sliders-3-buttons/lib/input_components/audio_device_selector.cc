@@ -8,14 +8,20 @@ namespace input_components {
 void AudioDeviceSelector::init() {
   // Configure button pin as input with pull-up resistor
   pinMode(_button_gpio_pin, INPUT_PULLUP);
+  pinMode(_dev_0_led_pin, OUTPUT);
+  pinMode(_dev_1_led_pin, OUTPUT);
 }
 
 void AudioDeviceSelector::setActiveLed() {
   if (_selected_device == 0) {
+    Serial.println("0 setting pin 0 to high");
     digitalWrite(_dev_0_led_pin, HIGH);
+    Serial.println("0 setting pin 1 to low");
     digitalWrite(_dev_1_led_pin, LOW);
-  } else if (_selected_device == 1) {
+  } else {
+    Serial.println("1 setting pin 0 to low");
     digitalWrite(_dev_0_led_pin, LOW);
+    Serial.println("1 setting pin 1 to high");
     digitalWrite(_dev_1_led_pin, HIGH);
   }
 }
