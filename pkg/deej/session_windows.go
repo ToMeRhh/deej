@@ -81,7 +81,7 @@ func newWCASession(
 
 	// use a self-identifying session name e.g. deej.sessions.chrome
 	s.logger = logger.Named(strings.TrimSuffix(s.Key(), ".exe"))
-	s.logger.Debugw(sessionCreationLogMessage, "session", s)
+	// s.logger.Debugw(sessionCreationLogMessage, "session", s)
 
 	return s, nil
 }
@@ -103,8 +103,6 @@ func newMasterSession(
 	s.master = true
 	s.name = key
 	s.humanReadableDesc = key
-
-	s.logger.Debugw(sessionCreationLogMessage, "session", s)
 
 	return s, nil
 }

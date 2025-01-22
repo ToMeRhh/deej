@@ -114,7 +114,6 @@ func (m *sessionMap) getAndAddSessions() error {
 		m.add(session)
 
 		if !m.sessionMapped(session) {
-			m.logger.Debugw("Tracking unmapped session", "session", session)
 			m.unmappedSessions = append(m.unmappedSessions, session)
 		}
 	}
