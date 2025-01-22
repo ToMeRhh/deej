@@ -204,10 +204,10 @@ func (sf *wcaSessionFinder) registerDefaultDeviceChangeCallback() error {
 		// QueryInterface:         sf.noopCallback,
 		// AddRef:                 sf.noopCallback,
 		// Release:                sf.noopCallback,
-		OnDeviceStateChanged:   func(pwstrDeviceId string, dwNewState uint64) error { return nil },
-		OnDeviceAdded:          func(pwstrDeviceId string) error { return nil },
-		OnDeviceRemoved:        func(pwstrDeviceId string) error { return nil },
-		OnPropertyValueChanged: func(pwstrDeviceId string, key uint64) error { return nil },
+		OnDeviceStateChanged:   nil,
+		OnDeviceAdded:          nil,
+		OnDeviceRemoved:        nil,
+		OnPropertyValueChanged: nil,
 	})
 
 	if err := sf.mmDeviceEnumerator.RegisterEndpointNotificationCallback(sf.mmNotificationClient); err != nil {

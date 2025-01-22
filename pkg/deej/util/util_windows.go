@@ -10,6 +10,7 @@ import (
 	"github.com/lxn/win"
 	"github.com/mitchellh/go-ps"
 	wca "github.com/moutend/go-wca/pkg/wca"
+	"go.uber.org/zap"
 )
 
 const (
@@ -142,14 +143,13 @@ func pcvSetDefaultEndpoint(pcv *IPolicyConfigVista, deviceID string, eRole uint3
 	return
 }
 
-func SetAudioDeviceByID(deviceID string) {
+func SetAudioDeviceByID(deviceID string, logger *zap.SugaredLogger) {
 	GUID_IPolicyConfigVista := ole.NewGUID("{568b9108-44bf-40b4-9006-86afe5b5a620}")
 	GUID_CPolicyConfigVistaClient := ole.NewGUID("{294935CE-F637-4E7C-A41B-AB255460B862}")
 	var policyConfig *IPolicyConfigVista
 
 	if err := ole.CoInitializeEx(0, ole.COINIT_APARTMENTTHREADED); err != nil {
-		// panic(err)
-		return
+		logger.Warn("Failed to initialize COM library, continuing anyway")
 	}
 	defer ole.CoUninitialize()
 

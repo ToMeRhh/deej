@@ -371,7 +371,7 @@ func (m *sessionMap) handleToggleOutputDeviceClickedEvent(event ToggleOutoutDevi
 		return
 	}
 	m.logger.Infof("Changing selected device to: %s", selectedDevice)
-	util.SetAudioDeviceByID(selectedDevice[0])
+	util.SetAudioDeviceByID(selectedDevice[0], m.logger)
 	m.refreshSessions(true)
 }
 
