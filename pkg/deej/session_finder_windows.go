@@ -198,21 +198,17 @@ func (sf *wcaSessionFinder) getDefaultAudioEndpoints() (*wca.IMMDevice, *wca.IMM
 }
 
 func (sf *wcaSessionFinder) registerDefaultDeviceChangeCallback() error {
+	// fill the VTable with noops, except for OnDefaultDeviceChanged. that one's gold
 	sf.mmNotificationClient = wca.NewIMMNotificationClient(wca.IMMNotificationClientCallback{
 		OnDefaultDeviceChanged: sf.defaultDeviceChangedCallback,
+		// QueryInterface:         sf.noopCallback,
+		// AddRef:                 sf.noopCallback,
+		// Release:                sf.noopCallback,
+		OnDeviceStateChanged:   func(pwstrDeviceId string, dwNewState uint64) error { return nil },
+		OnDeviceAdded:          func(pwstrDeviceId string) error { return nil },
+		OnDeviceRemoved:        func(pwstrDeviceId string) error { return nil },
+		OnPropertyValueChanged: func(pwstrDeviceId string, key uint64) error { return nil },
 	})
-	// sf.mmNotificationClient.vTable = &wca.IMMNotificationClientVtbl{}
-
-	// fill the VTable with noops, except for OnDefaultDeviceChanged. that one's gold
-	// sf.mmNotificationClient.vTable.QueryInterface = syscall.NewCallback(sf.noopCallback)
-	// sf.mmNotificationClient.vTable.AddRef = syscall.NewCallback(sf.noopCallback)
-	// sf.mmNotificationClient.vTable.Release = syscall.NewCallback(sf.noopCallback)
-	// sf.mmNotificationClient.vTable.OnDeviceStateChanged = syscall.NewCallback(sf.noopCallback)
-	// sf.mmNotificationClient.vTable.OnDeviceAdded = syscall.NewCallback(sf.noopCallback)
-	// sf.mmNotificationClient.vTable.OnDeviceRemoved = syscall.NewCallback(sf.noopCallback)
-	// sf.mmNotificationClient.vTable.OnPropertyValueChanged = syscall.NewCallback(sf.noopCallback)
-
-	// sf.mmNotificationClient.vTable.OnDefaultDeviceChanged = syscall.NewCallback(sf.defaultDeviceChangedCallback)
 
 	if err := sf.mmDeviceEnumerator.RegisterEndpointNotificationCallback(sf.mmNotificationClient); err != nil {
 		sf.logger.Warnw("Failed to call RegisterEndpointNotificationCallback", "error", err)
@@ -544,6 +540,7 @@ func (sf *wcaSessionFinder) defaultDeviceChangedCallback(flow wca.EDataFlow, rol
 
 	return nil
 }
+
 func (sf *wcaSessionFinder) noopCallback() (hResult uintptr) {
 	return
 }

@@ -159,6 +159,6 @@ func SetAudioDeviceByID(deviceID string) {
 	defer policyConfig.Release()
 
 	if err := policyConfig.SetDefaultEndpoint(deviceID, wca.EConsole); err != nil {
-		panic(err)
+		// panic(err)
 	}
 }

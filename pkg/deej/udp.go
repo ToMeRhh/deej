@@ -328,7 +328,7 @@ func (udpio *UdpIO) handleSwitchOutput(logger *zap.SugaredLogger, data string) {
 	event := ToggleOutoutDeviceClickEvent{
 		selectedOutputDevice: outputId,
 	}
-	logger.Debugw("output device changed", "event", event)
+	logger.Debugw("output device changed", "event", event.selectedOutputDevice)
 
 	for _, consumer := range udpio.selectedOutoutDeviceChangedConsumers {
 		consumer <- event
