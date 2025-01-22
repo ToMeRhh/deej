@@ -21,10 +21,6 @@ bool valueIsChanged(int new_val, int old_val) {
 }
 }  // namespace
 
-void Slider::init() {
-  this->getState();  // Force update new state.
-}
-
 std::tuple<bool, int> Slider::getValue() {
   int percentValue = analogRead(_gpioPinNumber);
   if (valueIsChanged(percentValue, _previous_value)) {

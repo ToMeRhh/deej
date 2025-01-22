@@ -12,10 +12,9 @@ class Slider {
   Slider(int slider_index, int gpioPinNumber)
       : _slider_index(slider_index),
         _gpioPinNumber(gpioPinNumber),
-        _previous_value(0) {}
-
-  // Initializes this instance. Should be called at 'setup()'.
-  void init();
+        _previous_value(0) {
+    this->getState();  // Force update new state.
+  }
 
   std::tuple<bool, int> getValue();
   std::tuple<std::string, std::string> getState();

@@ -67,26 +67,22 @@ void setup() {
   sliders->push_back(new Slider(2, SLIDER_2_PIN));
   sliders->push_back(new Slider(3, SLIDER_3_PIN));
   sliders->push_back(new Slider(4, SLIDER_4_PIN));
-  for (auto *slider : *sliders) {
-    slider->init();
-  }
   Serial.println("Sliders initialized!");
 
   mute_buttons = new std::vector<MuteButton *>();
-  mute_buttons->push_back(
-      new MuteButton(0, MUTE_BUTTON_0_PIN, MUTE_BUTTON_0_LED_PIN));
-  mute_buttons->push_back(
-      new MuteButton(1, MUTE_BUTTON_1_PIN, MUTE_BUTTON_1_LED_PIN));
-  for (auto *button : *mute_buttons) {
-    button->init();
-  }
+  // Controls two sessions (speakers and headphones).
+  MuteButton *output_devices_mute_button =
+      new MuteButton(0, MUTE_BUTTON_0_PIN, MUTE_BUTTON_0_LED_PIN, 2);
+  MuteButton *mic_mute_button =
+      new MuteButton(1, MUTE_BUTTON_1_PIN, MUTE_BUTTON_1_LED_PIN);
+  mute_buttons->push_back(output_devices_mute_button);
+  mute_buttons->push_back(mic_mute_button);
   Serial.println("Mute Buttons initialized!");
 
-  audio_device_selector =
-      new AudioDeviceSelector(AUDIO_DEVICE_SELECTOR_BUTTON_PIN,
-                              AUDIO_DEVICE_SELECTOR_BUTTON_DEV_0_LED_PIN,
-                              AUDIO_DEVICE_SELECTOR_BUTTON_DEV_1_LED_PIN);
-  audio_device_selector->init();
+  audio_device_selector = new AudioDeviceSelector(
+      AUDIO_DEVICE_SELECTOR_BUTTON_PIN,
+      AUDIO_DEVICE_SELECTOR_BUTTON_DEV_0_LED_PIN,
+      AUDIO_DEVICE_SELECTOR_BUTTON_DEV_1_LED_PIN, output_devices_mute_button);
   Serial.println("Audio device selector button initialized!");
 }
 
