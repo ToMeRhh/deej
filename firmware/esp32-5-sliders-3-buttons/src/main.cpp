@@ -9,11 +9,11 @@
 #include <string>
 #include <vector>
 
-#define SLIDER_0_PIN 34
+#define SLIDER_0_PIN 33
 #define SLIDER_1_PIN 35
 #define SLIDER_2_PIN 32
 #define SLIDER_3_PIN 36
-#define SLIDER_4_PIN 33
+#define SLIDER_4_PIN 34
 #define MUTE_BUTTON_0_PIN 4
 #define MUTE_BUTTON_0_LED_PIN 12
 #define MUTE_BUTTON_1_PIN 14

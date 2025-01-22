@@ -14,14 +14,10 @@ void AudioDeviceSelector::init() {
 
 void AudioDeviceSelector::setActiveLed() {
   if (_selected_device == 0) {
-    Serial.println("0 setting pin 0 to high");
     digitalWrite(_dev_0_led_pin, HIGH);
-    Serial.println("0 setting pin 1 to low");
     digitalWrite(_dev_1_led_pin, LOW);
   } else {
-    Serial.println("1 setting pin 0 to low");
     digitalWrite(_dev_0_led_pin, LOW);
-    Serial.println("1 setting pin 1 to high");
     digitalWrite(_dev_1_led_pin, HIGH);
   }
 }
