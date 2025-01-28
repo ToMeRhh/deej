@@ -13,25 +13,40 @@ std::tuple<bool, bool> MuteButton::getValue() {
     while (digitalRead(_button_gpio_pin) == LOW) {
       delay(40);
     }
-    setState(!this->_is_pressed[_active_session]);
-    return std::tuple(true, this->_is_pressed[_active_session]);
+    auto new_state = this->_is_pressed[_active_session];
+    new_state.is_pressed = !new_state.is_pressed;
+    setState(_active_session, new_state);
+    return std::tuple(true, new_state.is_pressed);
   }
-  return std::tuple(false, this->_is_pressed[_active_session]);
+  return std::tuple(false, this->_is_pressed[_active_session].is_pressed);
 }
 
-void MuteButton::setState(bool is_pressed) {
-  this->_is_pressed[_active_session] = is_pressed;
-  digitalWrite(_led_gpio_pin, is_pressed ? LOW : HIGH);
+void MuteButton::setState(int session, const ButtonState& state) {
+  this->_is_pressed[session] = state;
+  updateLedState();
 }
 
-void MuteButton::setActiveSession(int active_session) {
-  _active_session = active_session;
-  MuteButton::setState(this->_is_pressed[_active_session]);
+void MuteButton::setLedState(int session, bool muted) {
+  this->_is_pressed.at(_active_session).led_state = muted;
+  updateLedState();
+}
+
+void MuteButton::setActiveSession(int new_session) {
+  _active_session = new_session;
+  MuteButton::setState(new_session, this->_is_pressed[new_session]);
+}
+
+void MuteButton::updateLedState() {
+  const auto& current_state = this->_is_pressed[_active_session];
+  digitalWrite(
+      _led_gpio_pin,
+      (current_state.is_pressed || current_state.led_state) ? LOW : HIGH);
 }
 
 std::tuple<std::string, std::string> MuteButton::getState() {
-  return {std::make_tuple(std::to_string(this->_button_index),
-                          std::to_string(_is_pressed[_active_session]))};
+  return {
+      std::make_tuple(std::to_string(this->_button_index),
+                      std::to_string(_is_pressed[_active_session].is_pressed))};
 }
 
 }  // namespace input_components

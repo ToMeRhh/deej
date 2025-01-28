@@ -10,6 +10,11 @@ namespace lib {
 namespace input_components {
 
 class MuteButton {
+  struct ButtonState {
+    bool is_pressed;
+    bool led_state;
+  };
+
  public:
   MuteButton(int button_index, int button_gpio_pin, int led_gpio_pin)
       : MuteButton(button_index, button_gpio_pin, led_gpio_pin, 1) {}
@@ -20,9 +25,6 @@ class MuteButton {
         _button_gpio_pin(button_gpio_pin),
         _led_gpio_pin(led_gpio_pin),
         _active_session(0) {
-    for (auto i = 0; i < controlled_sessions; i++) {
-      _is_pressed[i] = false;
-    }
     // Configure button pin as input with pull-up resistor
     pinMode(_button_gpio_pin, INPUT_PULLUP);
     pinMode(_led_gpio_pin, OUTPUT);
@@ -32,8 +34,11 @@ class MuteButton {
   std::tuple<bool, bool> getValue();
   std::tuple<std::string, std::string> getState();
 
-  void setState(bool is_pressed);
+  void setState(int session, const ButtonState& state);
   void setActiveSession(int active_session);
+  // Requests the led to be turned on when the button is not already muted.
+  void setLedState(int session, bool muted);
+  void updateLedState();
 
   const int _button_index;
 
@@ -42,7 +47,7 @@ class MuteButton {
   const int _led_gpio_pin;
 
   int _active_session;
-  std::map<int, bool> _is_pressed;
+  std::map<int, ButtonState> _is_pressed;
 };
 
 }  // namespace input_components
