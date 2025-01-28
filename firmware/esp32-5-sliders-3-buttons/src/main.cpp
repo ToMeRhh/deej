@@ -61,14 +61,6 @@ void setup() {
 
   Serial.println("Initializing components:");
 
-  sliders = new std::vector<Slider *>();
-  sliders->push_back(new Slider(0, SLIDER_0_PIN));
-  sliders->push_back(new Slider(1, SLIDER_1_PIN));
-  sliders->push_back(new Slider(2, SLIDER_2_PIN));
-  sliders->push_back(new Slider(3, SLIDER_3_PIN));
-  sliders->push_back(new Slider(4, SLIDER_4_PIN));
-  Serial.println("Sliders initialized!");
-
   mute_buttons = new std::vector<MuteButton *>();
   // Controls two sessions (speakers and headphones).
   MuteButton *output_devices_mute_button =
@@ -78,6 +70,18 @@ void setup() {
   mute_buttons->push_back(output_devices_mute_button);
   mute_buttons->push_back(mic_mute_button);
   Serial.println("Mute Buttons initialized!");
+
+  sliders = new std::vector<Slider *>();
+  sliders->push_back(new Slider(0, SLIDER_0_PIN,
+                                std::make_optional<Slider::SessionMuteButton>(
+                                    {output_devices_mute_button, 0})));
+  sliders->push_back(new Slider(1, SLIDER_1_PIN,
+                                std::make_optional<Slider::SessionMuteButton>(
+                                    {output_devices_mute_button, 1})));
+  sliders->push_back(new Slider(2, SLIDER_2_PIN));
+  sliders->push_back(new Slider(3, SLIDER_3_PIN));
+  sliders->push_back(new Slider(4, SLIDER_4_PIN));
+  Serial.println("Sliders initialized!");
 
   audio_device_selector = new AudioDeviceSelector(
       AUDIO_DEVICE_SELECTOR_BUTTON_PIN,
