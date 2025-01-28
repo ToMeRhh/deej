@@ -25,6 +25,10 @@ std::tuple<bool, int> Slider::getValue() {
   int percentValue = analogRead(_gpioPinNumber);
   if (valueIsChanged(percentValue, _previous_value)) {
     _previous_value = percentValue;
+    if (_session_mute_button.has_value()) {
+      _session_mute_button->button->setLedState(_session_mute_button->session,
+                                                percentValue == 0);
+    }
     return std::tuple(true, percentValue);
   }
   return std::tuple(false, percentValue);
