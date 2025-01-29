@@ -34,7 +34,7 @@ class MuteButton {
   std::tuple<bool, bool> getValue();
   std::tuple<std::string, std::string> getState();
 
-  void setState(int session, const ButtonState& state);
+  void setMuteState(int session, bool mute_state);
   void setActiveSession(int active_session);
   // Requests the led to be turned on when the button is not already muted.
   void setLedState(int session, bool muted);
@@ -47,7 +47,7 @@ class MuteButton {
   const int _led_gpio_pin;
 
   int _active_session;
-  std::map<int, ButtonState> _is_pressed;
+  std::map<int, ButtonState> _buttons_states;
 };
 
 }  // namespace input_components
