@@ -29,6 +29,8 @@ class AudioDeviceSelector {
     // here accordingly.
     digitalWrite(_dev_0_led_pin, HIGH);
     digitalWrite(_dev_1_led_pin, HIGH);
+
+    setActiveDevice(_selected_device);
   }
 
   // Initializes this instance. Should be called at 'setup()'.
