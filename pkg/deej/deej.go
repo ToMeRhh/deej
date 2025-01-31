@@ -158,6 +158,13 @@ func (d *Deej) run() {
 				"This UDP port is busy, make sure to close any slider monitor or other deej instance.")
 			d.signalStop()
 		}
+
+		if err := d.tcpStateServer.Start(); err != nil {
+			d.logger.Warnw("Failed to start first-time TCP state server", "error", err)
+			d.notifier.Notify(fmt.Sprintf("Could not start TCP listener on port %d!", d.config.UdpConnectionInfo.UdpPort),
+				"This TCP port is busy, make sure to close any other deej instance.")
+			d.signalStop()
+		}
 	}()
 
 	// wait until stopped (gracefully)
@@ -182,8 +189,8 @@ func (d *Deej) stop() error {
 	d.logger.Info("Stopping")
 
 	d.config.StopWatchingConfigFile()
-	d.deejComponentsController.Stop()
 	d.tcpStateServer.Stop()
+	d.deejComponentsController.Stop()
 
 	// release the session map
 	if err := d.sessions.release(); err != nil {
