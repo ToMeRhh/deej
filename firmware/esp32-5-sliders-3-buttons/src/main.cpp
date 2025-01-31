@@ -1,6 +1,7 @@
 #include <Arduino.h>
 #include <WiFi.h>
 #include <audio_device_selector.h>
+#include <backend_state_api.h>
 #include <mute_button.h>
 #include <slider.h>
 #include <string.h>
@@ -22,6 +23,7 @@
 #define AUDIO_DEVICE_SELECTOR_BUTTON_DEV_0_LED_PIN 18
 #define AUDIO_DEVICE_SELECTOR_BUTTON_DEV_1_LED_PIN 19
 
+using lib::api::BackendStateApi;
 using lib::api::VolumeControllerApi;
 using lib::input_components::AudioDeviceSelector;
 using lib::input_components::MuteButton;
@@ -30,9 +32,11 @@ using lib::input_components::Slider;
 const char *ssid = "TnM";
 const char *password = "tm5971088tm";
 const char *server_address = "192.168.1.10";
-const int server_port = 16990;
+const int udp_server_port = 16990;
+const int tcp_server_port = 16991;
 
-VolumeControllerApi *api = nullptr;
+VolumeControllerApi *udp_api = nullptr;
+BackendStateApi *tcp_api = nullptr;
 std::vector<MuteButton *> *mute_buttons = nullptr;
 std::vector<Slider *> *sliders = nullptr;
 AudioDeviceSelector *audio_device_selector = nullptr;
@@ -56,7 +60,8 @@ void setup() {
   setupWifi();
 
   Serial.println("Initializing API:");
-  api = new VolumeControllerApi(server_address, server_port);
+  udp_api = new VolumeControllerApi(server_address, udp_server_port);
+  tcp_api = new BackendStateApi(server_address, tcp_server_port);
   Serial.println("API Initialized!");
 
   Serial.println("Initializing components:");
@@ -102,7 +107,7 @@ void loop() {
     mute_buttons_data += std::to_string(value);
   }
   if (mute_buttons_changed) {
-    api->sendUdpData(mute_buttons_data);
+    udp_api->sendUdpData(mute_buttons_data);
   }
 
   std::string sliders_data = "Sliders";
@@ -114,12 +119,12 @@ void loop() {
     sliders_data += std::to_string(value);
   }
   if (sliders_changed) {
-    api->sendUdpData(sliders_data);
+    udp_api->sendUdpData(sliders_data);
   }
 
   if (auto [changed, value] = audio_device_selector->getValue(); changed) {
     char data[20] = "SwitchOutput|";
-    api->sendUdpData(strcat(data, std::to_string(value).c_str()));
+    udp_api->sendUdpData(strcat(data, std::to_string(value).c_str()));
   }
 
   delay(150);
