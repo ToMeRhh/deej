@@ -23,6 +23,7 @@ type Deej struct {
 	notifier                 Notifier
 	config                   *CanonicalConfig
 	deejComponentsController DeejComponentsController
+	tcpStateServer           *TCPStateServer
 	sessions                 *sessionMap
 
 	stopChannel chan bool
@@ -91,6 +92,14 @@ func (d *Deej) Initialize() error {
 
 	d.deejComponentsController = udp
 	d.logger.Info("Created UDP SliderController")
+
+	tcp, err := NewTCPStateServer(d, d.logger)
+	if err != nil {
+		d.logger.Errorw("Failed to create UdpIO", "error", err)
+		return fmt.Errorf("create new UdpIO: %w", err)
+	}
+	d.tcpStateServer = tcp
+	d.logger.Info("Created TCP State Server")
 
 	// initialize the session map
 	if err := d.sessions.initialize(); err != nil {
@@ -174,6 +183,7 @@ func (d *Deej) stop() error {
 
 	d.config.StopWatchingConfigFile()
 	d.deejComponentsController.Stop()
+	d.tcpStateServer.Stop()
 
 	// release the session map
 	if err := d.sessions.release(); err != nil {

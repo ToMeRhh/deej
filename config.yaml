@@ -28,5 +28,6 @@ invert_sliders: false
 # supported values are "low" (excellent hardware), "default" (regular hardware) or "high" (bad, noisy hardware)
 noise_reduction: default
 
-# settings for the UDP connection
+# settings for the remote connection
 udp_port: 16990
+tcp_port: 16991
