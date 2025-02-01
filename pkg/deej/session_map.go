@@ -138,10 +138,7 @@ func (m *sessionMap) setupOnConfigReload() {
 }
 
 func (m *sessionMap) setupOnSliderMove() {
-	eventsChannel := m.
-		deej.
-		deejComponentsController.
-		SubscribeToSliderMoveEvents()
+	eventsChannel := m.deej.deejSlidersController.SubscribeToSliderMoveEvents()
 
 	go func() {
 		for event := range eventsChannel {
@@ -151,23 +148,11 @@ func (m *sessionMap) setupOnSliderMove() {
 }
 
 func (m *sessionMap) setupOnMuteButtonClicked() {
-	eventsChannel := m.deej.deejComponentsController.SubscribeToMuteButtonClickEvents()
-
-	go func() {
-		for event := range eventsChannel {
-			m.handleMuteButtonClickedEvent(event)
-		}
-	}()
+	m.deej.deejButtonsController.setMuteButtonClickEventConsumer(m.handleMuteButtonClickedEventsAndGetState)
 }
 
 func (m *sessionMap) setupOnToggleOutputDeviceButtonClicked() {
-	eventsChannel := m.deej.deejComponentsController.SubscribeToToggleOutoutDeviceClickEvents()
-
-	go func() {
-		for event := range eventsChannel {
-			m.handleToggleOutputDeviceClickedEvent(event)
-		}
-	}()
+	m.deej.deejButtonsController.setToggleOutputDeviceEventConsumer(m.handleToggleOutputDeviceClickedEventAndGetState)
 }
 
 // performance: explain why force == true at every such use to avoid unintended forced refresh spams
@@ -297,8 +282,79 @@ func (m *sessionMap) handleSliderMoveEvent(event SliderMoveEvent) {
 	}
 }
 
-func (m *sessionMap) handleMuteButtonClickedEvent(event MuteButtonClickEvent) {
+func (m *sessionMap) handleMuteButtonClickedEventsAndGetState(events []MuteButtonClickEvent) (newState MuteButtonsState, err error) {
+	m.maybeRefreshSessions()
+	m.logger.Infow("Handling mute events", "events", events, "len", len(events))
 
+	// get the targets mapped to this buttons from the config
+	targets_arr := make([][]string, len(events))
+	for event_index, event := range events {
+		targets, ok := m.deej.config.MuteButtonMapping.get(event.MuteButtonID)
+		if !ok {
+			// if a button is not found in config, silently ignore
+			m.logger.Warn("Ignoring data for unmapped button (%d)", event.MuteButtonID)
+			continue
+		}
+		targets_arr[event_index] = targets
+	}
+	m.logger.Infow("targets:", "targets", targets_arr)
+
+	targetFound := false
+	adjustmentFailed := false
+	ret := MuteButtonsState{MuteButtons: make([]bool, len(events))}
+
+	// for each possible target for this slider...
+	for event_index, targets := range targets_arr {
+		for _, target := range targets {
+
+			// resolve the target name by cleaning it up and applying any special transformations.
+			// depending on the transformation applied, this can result in more than one target name
+			resolvedTargets := m.resolveTarget(target)
+
+			// for each resolved target...
+			for _, resolvedTarget := range resolvedTargets {
+
+				// check the map for matching sessions
+				sessions, ok := m.get(resolvedTarget)
+				m.logger.Infof("testing target: %s", sessions)
+
+				// no sessions matching this target - move on
+				if !ok {
+					continue
+				}
+
+				targetFound = true
+
+				// iterate all matching sessions and adjust the mute state of each one
+				for _, session := range sessions {
+					if err := session.SetMute(events[event_index].mute); err != nil {
+						m.logger.Warnw("Failed to set target session mute state", "error", err)
+						adjustmentFailed = true
+						ret.MuteButtons[event_index] = session.GetMute()
+					} else {
+						ret.MuteButtons[event_index] = events[event_index].mute
+					}
+				}
+			}
+		}
+	}
+
+	// if we still haven't found a target or the volume adjustment failed, maybe look for the target again.
+	// processes could've opened since the last time this slider moved.
+	// if they haven't, the cooldown will take care to not spam it up
+	if !targetFound {
+		m.refreshSessions(false)
+	} else if adjustmentFailed {
+
+		// performance: the reason that forcing a refresh here is okay is that we'll only get here
+		// when a session's SetVolume call errored, such as in the case of a stale master session
+		// (or another, more catastrophic failure happens)
+		m.refreshSessions(true)
+	}
+	return ret, nil
+}
+
+func (m *sessionMap) handleMuteButtonClickedEvent(event MuteButtonClickEvent) {
 	m.maybeRefreshSessions()
 	m.logger.Infow("Handling mute event", "event", event)
 	// get the targets mapped to this slider from the config
@@ -359,8 +415,7 @@ func (m *sessionMap) handleMuteButtonClickedEvent(event MuteButtonClickEvent) {
 	}
 }
 
-func (m *sessionMap) handleToggleOutputDeviceClickedEvent(event ToggleOutoutDeviceClickEvent) {
-
+func (m *sessionMap) handleToggleOutputDeviceClickedEventAndGetState(event ToggleOutoutDeviceClickEvent) (newState OutputDeviceState, err error) {
 	m.maybeRefreshSessions()
 
 	// get the UUID of the target device to toggle to
@@ -371,8 +426,29 @@ func (m *sessionMap) handleToggleOutputDeviceClickedEvent(event ToggleOutoutDevi
 		return
 	}
 	m.logger.Infof("Changing selected device to: %s", selectedDevice)
-	util.SetAudioDeviceByID(selectedDevice[0], m.logger)
+	res := util.SetAudioDeviceByID(selectedDevice[0], m.logger)
 	m.refreshSessions(true)
+	if res {
+		return OutputDeviceState{selectedOutputDevice: event.selectedOutputDevice}, nil
+	}
+	out, _, err := m.sessionFinder.getDefaultAudioEndpoints()
+	if err != nil {
+		return OutputDeviceState{selectedOutputDevice: -1}, nil
+	}
+	var outDeviceId string
+	out.GetId(&outDeviceId)
+	for key, ids := range m.deej.config.AvailableOutputDeviceMapping.m {
+		for _, id := range ids {
+			if id == outDeviceId {
+				return OutputDeviceState{selectedOutputDevice: key}, nil
+			}
+		}
+	}
+	return OutputDeviceState{selectedOutputDevice: -1}, nil
+}
+
+func (m *sessionMap) handleToggleOutputDeviceClickedEvent(event ToggleOutoutDeviceClickEvent) {
+	m.handleToggleOutputDeviceClickedEventAndGetState(event)
 }
 
 func (m *sessionMap) targetHasSpecialTransform(target string) bool {

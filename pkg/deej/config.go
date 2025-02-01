@@ -23,7 +23,7 @@ type CanonicalConfig struct {
 	UdpConnectionInfo struct {
 		UdpPort int
 	}
-	TcpStateServerConnectionInfo struct {
+	TcpConnectionInfo struct {
 		TcpPort int
 	}
 
@@ -248,14 +248,14 @@ func (cc *CanonicalConfig) populateFromVipers() error {
 
 		cc.UdpConnectionInfo.UdpPort = defaultUdpPort
 	}
-	cc.TcpStateServerConnectionInfo.TcpPort = cc.userConfig.GetInt(configKeyTcpPort)
-	if (cc.TcpStateServerConnectionInfo.TcpPort <= 0) || (cc.TcpStateServerConnectionInfo.TcpPort >= 65536) {
+	cc.TcpConnectionInfo.TcpPort = cc.userConfig.GetInt(configKeyTcpPort)
+	if (cc.TcpConnectionInfo.TcpPort <= 0) || (cc.TcpConnectionInfo.TcpPort >= 65536) {
 		cc.logger.Warnw("Invalid TCP port specified, using default value",
 			"key", configKeyTcpPort,
-			"invalidValue", cc.TcpStateServerConnectionInfo.TcpPort,
+			"invalidValue", cc.TcpConnectionInfo.TcpPort,
 			"defaultValue", defaultTcpPort)
 
-		cc.TcpStateServerConnectionInfo.TcpPort = defaultTcpPort
+		cc.TcpConnectionInfo.TcpPort = defaultTcpPort
 	}
 
 	cc.InvertSliders = cc.userConfig.GetBool(configKeyInvertSliders)

@@ -41,7 +41,7 @@ func NewUdpIO(deej *Deej, logger *zap.SugaredLogger) (*UdpIO, error) {
 	udpio := &UdpIO{
 		deej:                deej,
 		logger:              logger,
-		stopChannel:         make(chan bool),
+		stopChannel:         deej.stopChannel,
 		sliderMoveConsumers: []chan SliderMoveEvent{},
 	}
 
