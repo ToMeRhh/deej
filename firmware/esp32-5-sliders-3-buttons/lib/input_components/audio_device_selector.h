@@ -17,7 +17,6 @@ class AudioDeviceSelector {
         _dev_1_led_pin(dev_1_led_pin),
         _multi_session_mute_button(multi_session_mute_button),
         _selected_device(0) {
-    _multi_session_mute_button->setActiveSession(_selected_device);
     // Configure button pin as input with pull-up resistor
     pinMode(_button_gpio_pin, INPUT_PULLUP);
     pinMode(_dev_0_led_pin, OUTPUT);

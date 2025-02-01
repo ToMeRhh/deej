@@ -1,6 +1,7 @@
 #include <Arduino.h>
 #include <WiFi.h>
 #include <audio_device_selector.h>
+#include <backend_state.h>
 #include <backend_state_api.h>
 #include <mute_button.h>
 #include <slider.h>
@@ -23,6 +24,7 @@
 #define AUDIO_DEVICE_SELECTOR_BUTTON_DEV_0_LED_PIN 18
 #define AUDIO_DEVICE_SELECTOR_BUTTON_DEV_1_LED_PIN 19
 
+using lib::api::BackendState;
 using lib::api::BackendStateApi;
 using lib::api::VolumeControllerApi;
 using lib::input_components::AudioDeviceSelector;
@@ -98,18 +100,6 @@ void setup() {
 }
 
 void loop() {
-  std::string mute_buttons_data = "MuteButtons";
-  bool mute_buttons_changed;
-  for (int i = 0; i < mute_buttons->size(); i++) {
-    auto [changed, value] = mute_buttons->at(i)->getValue();
-    mute_buttons_changed |= changed;
-    mute_buttons_data += "|";
-    mute_buttons_data += std::to_string(value);
-  }
-  if (mute_buttons_changed) {
-    udp_api->sendUdpData(mute_buttons_data);
-  }
-
   std::string sliders_data = "Sliders";
   bool sliders_changed;
   for (int i = 0; i < sliders->size(); i++) {
@@ -122,9 +112,29 @@ void loop() {
     udp_api->sendUdpData(sliders_data);
   }
 
+  std::vector<bool> mute_buttons_state(mute_buttons->size());
+  bool mute_buttons_changed = false;
+  for (int i = 0; i < mute_buttons->size(); i++) {
+    auto [changed, value] = mute_buttons->at(i)->getValue();
+    mute_buttons_changed |= changed;
+    mute_buttons_state[i] = value;
+  }
+
+  if (mute_buttons_changed) {
+    const auto &updated_state =
+        tcp_api->setMuteButtonsState(mute_buttons_state);
+    if (updated_state.has_value()) {
+      // TODO: Update the mute buttons state.
+    }
+  }
+
   if (auto [changed, value] = audio_device_selector->getValue(); changed) {
-    char data[20] = "SwitchOutput|";
-    udp_api->sendUdpData(strcat(data, std::to_string(value).c_str()));
+    const auto &updated_state = tcp_api->setOutputDeviceState(value);
+    if (updated_state.has_value()) {
+      // In case of failure - use the value from the server or fallback to 0.
+      audio_device_selector->setActiveDevice(
+          updated_state.value() == -1 ? 0 : updated_state.value());
+    }
   }
 
   delay(150);
