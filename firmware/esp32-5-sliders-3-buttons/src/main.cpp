@@ -96,7 +96,7 @@ void setup() {
       AUDIO_DEVICE_SELECTOR_BUTTON_DEV_1_LED_PIN, output_devices_mute_button);
   Serial.println("Audio device selector button initialized!");
 
-  Serial.println("Initialization complete! Starting...");
+  Serial.println("Initialization complete!");
 }
 
 void loop() {
@@ -123,10 +123,12 @@ void loop() {
   if (mute_buttons_changed) {
     const auto &updated_state =
         tcp_api->setMuteButtonsState(mute_buttons_state);
-    if (updated_state.has_value()) {
+
+    if (updated_state.has_value() &&
+        updated_state.value().size() == mute_buttons->size()) {
       for (int i = 0; i < mute_buttons->size(); i++) {
         mute_buttons->at(i)->setActiveSessionMuteState(
-            updated_state.value().at(i));
+            updated_state.value()[i]);
       }
     }
   }
