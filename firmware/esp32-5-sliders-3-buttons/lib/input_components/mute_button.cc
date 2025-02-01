@@ -25,6 +25,11 @@ void MuteButton::setMuteState(int session, bool mute_state) {
   updateLedState();
 }
 
+void MuteButton::setActiveSessionMuteState(bool mute_state) {
+  this->_buttons_states[this->_active_session].is_pressed = mute_state;
+  updateLedState();
+}
+
 void MuteButton::setLedState(int session, bool muted) {
   this->_buttons_states[session].led_state = muted;
   updateLedState();

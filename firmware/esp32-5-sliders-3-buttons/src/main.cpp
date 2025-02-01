@@ -124,7 +124,10 @@ void loop() {
     const auto &updated_state =
         tcp_api->setMuteButtonsState(mute_buttons_state);
     if (updated_state.has_value()) {
-      // TODO: Update the mute buttons state.
+      for (int i = 0; i < mute_buttons->size(); i++) {
+        mute_buttons->at(i)->setActiveSessionMuteState(
+            updated_state.value().at(i));
+      }
     }
   }
 

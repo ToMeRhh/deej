@@ -38,6 +38,7 @@ class AudioDeviceSelector {
   // Sets the given device index as the selected device, updates the LED
   // indication and updates the mute button pointer.
   void setActiveDevice(int selected_device);
+  inline int getActiveDevice() { return _selected_device; }
 
   std::tuple<bool, int> getValue();
   std::tuple<std::string, std::string> getState();
