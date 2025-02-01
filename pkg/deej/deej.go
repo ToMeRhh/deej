@@ -19,11 +19,12 @@ const (
 
 // Deej is the main entity managing access to all sub-components
 type Deej struct {
-	logger                   *zap.SugaredLogger
-	notifier                 Notifier
-	config                   *CanonicalConfig
-	deejComponentsController DeejComponentsController
-	sessions                 *sessionMap
+	logger                *zap.SugaredLogger
+	notifier              Notifier
+	config                *CanonicalConfig
+	deejSlidersController DeejSlidersController
+	deejButtonsController DeejButtonsController
+	sessions              *sessionMap
 
 	stopChannel chan bool
 	version     string
@@ -89,8 +90,16 @@ func (d *Deej) Initialize() error {
 		return fmt.Errorf("create new UdpIO: %w", err)
 	}
 
-	d.deejComponentsController = udp
+	d.deejSlidersController = udp
 	d.logger.Info("Created UDP SliderController")
+
+	tcp, err := NewTcpIO(d, d.logger)
+	if err != nil {
+		d.logger.Errorw("Failed to create UdpIO", "error", err)
+		return fmt.Errorf("create new UdpIO: %w", err)
+	}
+	d.deejButtonsController = tcp
+	d.logger.Info("Created TCP State Server")
 
 	// initialize the session map
 	if err := d.sessions.initialize(); err != nil {
@@ -143,10 +152,17 @@ func (d *Deej) run() {
 
 	// connect to the arduino for the first time
 	go func() {
-		if err := d.deejComponentsController.Start(); err != nil {
+		if err := d.deejSlidersController.Start(); err != nil {
 			d.logger.Warnw("Failed to start first-time slider connection", "error", err)
 			d.notifier.Notify(fmt.Sprintf("Could not start UDP listener on port %d!", d.config.UdpConnectionInfo.UdpPort),
 				"This UDP port is busy, make sure to close any slider monitor or other deej instance.")
+			d.signalStop()
+		}
+
+		if err := d.deejButtonsController.Start(); err != nil {
+			d.logger.Warnw("Failed to start first-time TCP state server", "error", err)
+			d.notifier.Notify(fmt.Sprintf("Could not start TCP listener on port %d!", d.config.TcpConnectionInfo.TcpPort),
+				"This TCP port is busy, make sure to close any other deej instance.")
 			d.signalStop()
 		}
 	}()
@@ -173,7 +189,8 @@ func (d *Deej) stop() error {
 	d.logger.Info("Stopping")
 
 	d.config.StopWatchingConfigFile()
-	d.deejComponentsController.Stop()
+	d.deejSlidersController.Stop()
+	d.deejButtonsController.Stop()
 
 	// release the session map
 	if err := d.sessions.release(); err != nil {

@@ -23,6 +23,9 @@ type CanonicalConfig struct {
 	UdpConnectionInfo struct {
 		UdpPort int
 	}
+	TcpConnectionInfo struct {
+		TcpPort int
+	}
 
 	InvertSliders bool
 
@@ -55,8 +58,10 @@ const (
 	configKeyInvertSliders                = "invert_sliders"
 	configKeyNoiseReductionLevel          = "noise_reduction"
 	configKeyUdpPort                      = "udp_port"
+	configKeyTcpPort                      = "tcp_port"
 
 	defaultUdpPort = 16990
+	defaultTcpPort = 16991
 )
 
 // has to be defined as a non-constant because we're using path.Join
@@ -85,6 +90,7 @@ func NewConfig(logger *zap.SugaredLogger, notifier Notifier) (*CanonicalConfig, 
 	userConfig.SetDefault(configKeyInvertSliders, false)
 
 	userConfig.SetDefault(configKeyUdpPort, defaultUdpPort)
+	userConfig.SetDefault(configKeyTcpPort, defaultTcpPort)
 
 	internalConfig := viper.New()
 	internalConfig.SetConfigName(internalConfigName)
@@ -241,6 +247,15 @@ func (cc *CanonicalConfig) populateFromVipers() error {
 			"defaultValue", defaultUdpPort)
 
 		cc.UdpConnectionInfo.UdpPort = defaultUdpPort
+	}
+	cc.TcpConnectionInfo.TcpPort = cc.userConfig.GetInt(configKeyTcpPort)
+	if (cc.TcpConnectionInfo.TcpPort <= 0) || (cc.TcpConnectionInfo.TcpPort >= 65536) {
+		cc.logger.Warnw("Invalid TCP port specified, using default value",
+			"key", configKeyTcpPort,
+			"invalidValue", cc.TcpConnectionInfo.TcpPort,
+			"defaultValue", defaultTcpPort)
+
+		cc.TcpConnectionInfo.TcpPort = defaultTcpPort
 	}
 
 	cc.InvertSliders = cc.userConfig.GetBool(configKeyInvertSliders)

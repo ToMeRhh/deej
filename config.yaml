@@ -18,8 +18,8 @@ mute_button_mapping:
   1: mic
 
 available_output_device:
-  0: "{0.0.0.00000000}.{e5bbaa86-5d02-416b-be76-286f2eeefa15}"
-  1: "{0.0.0.00000000}.{02870d54-9a1a-4478-a1a9-ced980df96fe}"
+  0: "{0.0.0.00000000}.{02870d54-9a1a-4478-a1a9-ced980df96fe}" # Speakers (Realtek(R) Audio)
+  1: "{0.0.0.00000000}.{e5bbaa86-5d02-416b-be76-286f2eeefa15}" # Headphones (HyperX Cloud III Wireless)
 
 # set this to true if you want the controls inverted (i.e. top is 0%, bottom is 100%)
 invert_sliders: false
@@ -28,5 +28,6 @@ invert_sliders: false
 # supported values are "low" (excellent hardware), "default" (regular hardware) or "high" (bad, noisy hardware)
 noise_reduction: default
 
-# settings for the UDP connection
+# settings for the remote connection
 udp_port: 16990
+tcp_port: 16991

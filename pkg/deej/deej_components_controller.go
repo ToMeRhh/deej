@@ -1,11 +1,26 @@
 package deej
 
-type DeejComponentsController interface {
+type MuteButtonsState struct {
+	MuteButtons []bool
+}
+type MuteButtonConsumer func(events []MuteButtonClickEvent) (newState MuteButtonsState, err error)
+
+type OutputDeviceState struct {
+	selectedOutputDevice int
+}
+type ToggleOutputDeviceConsumer func(event ToggleOutoutDeviceClickEvent) (newState OutputDeviceState, err error)
+
+type DeejSlidersController interface {
 	Start() error
 	Stop()
 	SubscribeToSliderMoveEvents() chan SliderMoveEvent
-	SubscribeToMuteButtonClickEvents() chan MuteButtonClickEvent
-	SubscribeToToggleOutoutDeviceClickEvents() chan ToggleOutoutDeviceClickEvent
+}
+
+type DeejButtonsController interface {
+	Start() error
+	Stop()
+	setMuteButtonClickEventConsumer(MuteButtonConsumer)
+	setToggleOutputDeviceEventConsumer(ToggleOutputDeviceConsumer)
 }
 
 // SliderMoveEvent represents a single slider move captured by deej
