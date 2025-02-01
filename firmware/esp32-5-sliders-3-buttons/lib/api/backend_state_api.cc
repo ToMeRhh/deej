@@ -41,7 +41,7 @@ std::optional<std::vector<bool>> BackendStateApi::setMuteButtonsState(
   std::string segment;
   std::vector<bool> ret;
 
-  while (std::getline(str, segment, '_')) {
+  while (std::getline(str, segment, '|')) {
     ret.push_back(segment == "true");
   }
 
