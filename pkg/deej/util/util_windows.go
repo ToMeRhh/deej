@@ -160,7 +160,7 @@ func SetAudioDeviceByID(deviceID string, logger *zap.SugaredLogger) bool {
 	defer policyConfig.Release()
 
 	if err := policyConfig.SetDefaultEndpoint(deviceID, wca.EConsole); err != nil {
-		logger.Warn("Failed to set default endpoint, exiting")
+		logger.Warn("Failed to set default endpoint, exiting: ", err)
 		return false
 	}
 	return true
