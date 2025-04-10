@@ -192,6 +192,10 @@ func GetDeviceIDByNameExec(deviceName string) (string, error) {
 	// Execute the PowerShell command
 	cmd := exec.Command("powershell", "-NoProfile", "-Command", psCommand)
 
+	cmd.SysProcAttr = &syscall.SysProcAttr{
+		HideWindow: true,
+	}
+
 	var stdout, stderr bytes.Buffer
 	cmd.Stdout = &stdout
 	cmd.Stderr = &stderr
