@@ -7,21 +7,29 @@
 # windows only - you can use 'system' to control the "system sounds" volume
 # important: slider indexes start at 0, regardless of which analog pins you're using!
 slider_mapping:
+  0: "Speakers (Realtek(R) Audio)"
+  1: "Headphones (HyperX Cloud III Wireless)"
+  2:
+    - cod.exe
+    - cs2.exe
+  3: spotify.exe
+  4: deej.unmapped
+
+mute_button_mapping:
   0: master
-  1: chrome.exe
-  2: spotify.exe
-  3:
-    - pathofexile_x64.exe
-    - rocketleague.exe
-  4: discord.exe
+  1: mic
+
+available_output_device:
+  0: "Speakers (Realtek(R) Audio)"
+  1: "Headphones (HyperX Cloud III Wireless)"
 
 # set this to true if you want the controls inverted (i.e. top is 0%, bottom is 100%)
 invert_sliders: false
 
-# settings for connecting to the arduino board
-com_port: COM4
-baud_rate: 9600
-
 # adjust the amount of signal noise reduction depending on your hardware quality
 # supported values are "low" (excellent hardware), "default" (regular hardware) or "high" (bad, noisy hardware)
 noise_reduction: default
+
+# settings for the remote connection
+udp_port: 16990
+tcp_port: 16991

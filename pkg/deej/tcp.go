@@ -160,7 +160,6 @@ func (tcpio *TcpIO) setupOnConfigReload() {
 
 func (tcpio *TcpIO) handleConnection(logger *zap.SugaredLogger, conn net.Conn) {
 	defer conn.Close()
-	logger.Info("got connection:", conn)
 
 	reader := bufio.NewReader(conn)
 

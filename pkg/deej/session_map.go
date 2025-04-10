@@ -354,79 +354,28 @@ func (m *sessionMap) handleMuteButtonClickedEventsAndGetState(events []MuteButto
 	return ret, nil
 }
 
-func (m *sessionMap) handleMuteButtonClickedEvent(event MuteButtonClickEvent) {
-	m.maybeRefreshSessions()
-	m.logger.Infow("Handling mute event", "event", event)
-	// get the targets mapped to this slider from the config
-	targets, ok := m.deej.config.MuteButtonMapping.get(event.MuteButtonID)
-	m.logger.Infof("targets: %s", strings.Join(targets, ","))
-
-	// if slider not found in config, silently ignore
-	if !ok {
-		m.logger.Warn("Ignoring data for unmapped slider (%d)", event.MuteButtonID)
-		return
-	}
-
-	targetFound := false
-	adjustmentFailed := false
-
-	// for each possible target for this slider...
-	for _, target := range targets {
-
-		// resolve the target name by cleaning it up and applying any special transformations.
-		// depending on the transformation applied, this can result in more than one target name
-		resolvedTargets := m.resolveTarget(target)
-
-		// for each resolved target...
-		for _, resolvedTarget := range resolvedTargets {
-
-			// check the map for matching sessions
-			sessions, ok := m.get(resolvedTarget)
-			m.logger.Infof("testing target: %s", sessions)
-
-			// no sessions matching this target - move on
-			if !ok {
-				continue
-			}
-
-			targetFound = true
-
-			// iterate all matching sessions and adjust the volume of each one
-			for _, session := range sessions {
-				if err := session.SetMute(event.mute); err != nil {
-					m.logger.Warnw("Failed to set target session volume", "error", err)
-					adjustmentFailed = true
-				}
-			}
-		}
-	}
-
-	// if we still haven't found a target or the volume adjustment failed, maybe look for the target again.
-	// processes could've opened since the last time this slider moved.
-	// if they haven't, the cooldown will take care to not spam it up
-	if !targetFound {
-		m.refreshSessions(false)
-	} else if adjustmentFailed {
-
-		// performance: the reason that forcing a refresh here is okay is that we'll only get here
-		// when a session's SetVolume call errored, such as in the case of a stale master session
-		// (or another, more catastrophic failure happens)
-		m.refreshSessions(true)
-	}
-}
-
 func (m *sessionMap) handleToggleOutputDeviceClickedEventAndGetState(event ToggleOutoutDeviceClickEvent) (newState OutputDeviceState, err error) {
 	m.maybeRefreshSessions()
 
-	// get the UUID of the target device to toggle to
-	selectedDevice, ok := m.deej.config.AvailableOutputDeviceMapping.get(event.selectedOutputDevice)
-
+	// get the device friendly name of the target device to toggle to
+	selectedDeviceFriendlyName, ok := m.deej.config.AvailableOutputDeviceMapping.get(event.selectedOutputDevice)
 	if !ok {
-		m.logger.Warn("Ignoring data for unknown output device slider (%d)", event.selectedOutputDevice)
+		m.logger.Warn("Ignoring data for unknown output device (%d)", event.selectedOutputDevice)
+		return
+	} else if len(selectedDeviceFriendlyName) != 1 {
+		m.logger.Warn("Multiple output device toggeling is not supported (%d), %s", event.selectedOutputDevice, selectedDeviceFriendlyName)
 		return
 	}
-	m.logger.Infof("Changing selected device to: %s", selectedDevice)
-	res := util.SetAudioDeviceByID(selectedDevice[0], m.logger)
+
+	// get the UUID of the target device to toggle to
+	selectedDevice, err := util.GetDeviceIDByNameExec(selectedDeviceFriendlyName[0])
+	if err != nil {
+		m.logger.Warnw("Failed to get device ID by name", "error", err)
+		return
+	}
+
+	m.logger.Infof("Changing selected device to: %s (%s)", selectedDevice, selectedDeviceFriendlyName[0])
+	res := util.SetAudioDeviceByID(selectedDevice, m.logger)
 	m.refreshSessions(true)
 	if res {
 		return OutputDeviceState{selectedOutputDevice: event.selectedOutputDevice}, nil
@@ -445,10 +394,6 @@ func (m *sessionMap) handleToggleOutputDeviceClickedEventAndGetState(event Toggl
 		}
 	}
 	return OutputDeviceState{selectedOutputDevice: -1}, nil
-}
-
-func (m *sessionMap) handleToggleOutputDeviceClickedEvent(event ToggleOutoutDeviceClickEvent) {
-	m.handleToggleOutputDeviceClickedEventAndGetState(event)
 }
 
 func (m *sessionMap) targetHasSpecialTransform(target string) bool {

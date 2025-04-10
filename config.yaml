@@ -18,8 +18,8 @@ mute_button_mapping:
   1: mic
 
 available_output_device:
-  0: "{0.0.0.00000000}.{02870d54-9a1a-4478-a1a9-ced980df96fe}" # Speakers (Realtek(R) Audio)
-  1: "{0.0.0.00000000}.{f79d00c3-c38d-46d4-b668-652defe5cdf9}" # Headphones (HyperX Cloud III Wireless)
+  0: "Speakers (Realtek(R) Audio)"
+  1: "Headphones (HyperX Cloud III Wireless)"
 
 # set this to true if you want the controls inverted (i.e. top is 0%, bottom is 100%)
 invert_sliders: false

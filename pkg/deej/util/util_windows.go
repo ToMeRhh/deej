@@ -1,7 +1,11 @@
 package util
 
 import (
+	"bytes"
+	"errors"
 	"fmt"
+	"os/exec"
+	"strings"
 	"syscall"
 	"time"
 	"unsafe"
@@ -164,4 +168,70 @@ func SetAudioDeviceByID(deviceID string, logger *zap.SugaredLogger) bool {
 		return false
 	}
 	return true
+}
+
+// GetDeviceIDByNameExec finds the PNPDeviceID (InstanceId) of devices matching the given name
+// by executing a PowerShell command.
+// Returns the Device ID and an error if the command fails, or if there are multiple devices matching the name (since we're using wildcards).
+func GetDeviceIDByNameExec(deviceName string) (string, error) {
+	if deviceName == "" {
+		return "", errors.New("deviceName cannot be empty")
+	}
+
+	// Escape single quotes in the device name for PowerShell command
+	psDeviceName := strings.ReplaceAll(deviceName, "'", "''")
+
+	// Construct the PowerShell command
+	// We search both FriendlyName and Name properties for a match using wildcards.
+	// Select-Object -ExpandProperty InstanceId outputs only the ID strings, one per line.
+	psCommand := fmt.Sprintf(
+		`Get-PnpDevice | Where-Object { $_.FriendlyName -like '*%s*' -or $_.Name -like '*%s*' } | Select-Object -ExpandProperty InstanceId | ForEach-Object { $_.Split('\\')[2] }`,
+		psDeviceName, psDeviceName,
+	)
+
+	// Execute the PowerShell command
+	cmd := exec.Command("powershell", "-NoProfile", "-Command", psCommand)
+
+	var stdout, stderr bytes.Buffer
+	cmd.Stdout = &stdout
+	cmd.Stderr = &stderr
+
+	err := cmd.Run() // Use Run instead of Output to capture stderr separately
+
+	// Check for errors during execution or in stderr
+	if err != nil {
+		// Attempt to provide more context if stderr has content
+		stderrStr := strings.TrimSpace(stderr.String())
+		if stderrStr != "" {
+			return "", fmt.Errorf("powershell command failed: %v - stderr: %s", err, stderrStr)
+		}
+		return "", fmt.Errorf("powershell command failed: %v", err)
+	}
+
+	// Process the output
+	output := strings.TrimSpace(stdout.String())
+	if output == "" {
+		// No devices found matching the name
+		return "", nil
+	}
+
+	// Split the output by newline characters (handling Windows \r\n and Unix \n)
+	ids := strings.Split(strings.ReplaceAll(output, "\r\n", "\n"), "\n")
+
+	// Filter out any potential empty strings resulting from splitting
+	var validIDs []string
+	for _, id := range ids {
+		trimmedID := strings.TrimSpace(id)
+		if trimmedID != "" {
+			validIDs = append(validIDs, trimmedID)
+		}
+	}
+
+	if len(validIDs) == 0 {
+		return "", fmt.Errorf("no valid device IDs found for device name: %s", deviceName)
+	} else if len(validIDs) != 1 {
+		return "", fmt.Errorf("multiple device IDs found for device name: %s", deviceName)
+	}
+
+	return validIDs[0], nil
 }
