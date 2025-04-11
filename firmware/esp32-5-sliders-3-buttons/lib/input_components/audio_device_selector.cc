@@ -11,7 +11,7 @@ std::tuple<bool, int> AudioDeviceSelector::getValue() {
     int debounce_count = 0;
     while (digitalRead(_button_gpio_pin) == LOW) {
       debounce_count++;
-      if (debounce_count > 30) {  // 3 seconds == 3000 ms == 30 * delay(100)
+      if (debounce_count > 20) {  // 2 seconds == 2000 ms == 20 * delay(100)
         _on_longpress_override_callback();
         return std::tuple(false, _selected_device);
       }
