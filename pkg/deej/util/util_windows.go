@@ -239,3 +239,68 @@ func GetDeviceIDByNameExec(deviceName string) (string, error) {
 
 	return validIDs[0], nil
 }
+
+// For future reference - this is the Windows API version of the function
+func GetDeviceIDByNameWinAPI(deviceName string) (string, error) {
+	if deviceName == "" {
+		return "", errors.New("deviceName cannot be empty")
+	}
+
+	if err := ole.CoInitializeEx(0, ole.COINIT_APARTMENTTHREADED); err != nil {
+		return "", fmt.Errorf("failed to initialize COM library: %w", err)
+	}
+	defer ole.CoUninitialize()
+
+	var mmDeviceEnumerator *wca.IMMDeviceEnumerator
+	if err := wca.CoCreateInstance(
+		wca.CLSID_MMDeviceEnumerator,
+		0,
+		wca.CLSCTX_ALL,
+		wca.IID_IMMDeviceEnumerator,
+		&mmDeviceEnumerator,
+	); err != nil {
+		return "", fmt.Errorf("failed to create device enumerator: %w", err)
+	}
+	defer mmDeviceEnumerator.Release()
+
+	var deviceCollection *wca.IMMDeviceCollection
+	if err := mmDeviceEnumerator.EnumAudioEndpoints(wca.EAll, wca.DEVICE_STATE_ACTIVE, &deviceCollection); err != nil {
+		return "", fmt.Errorf("failed to enumerate audio endpoints: %w", err)
+	}
+	defer deviceCollection.Release()
+
+	var deviceCount uint32
+	if err := deviceCollection.GetCount(&deviceCount); err != nil {
+		return "", fmt.Errorf("failed to get device count: %w", err)
+	}
+
+	for deviceIdx := uint32(0); deviceIdx < deviceCount; deviceIdx++ {
+		var endpoint *wca.IMMDevice
+		if err := deviceCollection.Item(deviceIdx, &endpoint); err != nil {
+			return "", fmt.Errorf("failed to get device at index %d: %w", deviceIdx, err)
+		}
+		defer endpoint.Release()
+
+		var propertyStore *wca.IPropertyStore
+		if err := endpoint.OpenPropertyStore(wca.STGM_READ, &propertyStore); err != nil {
+			return "", fmt.Errorf("failed to open property store for device at index %d: %w", deviceIdx, err)
+		}
+		defer propertyStore.Release()
+
+		value := &wca.PROPVARIANT{}
+		if err := propertyStore.GetValue(&wca.PKEY_Device_FriendlyName, value); err != nil {
+			return "", fmt.Errorf("failed to get friendly name for device at index %d: %w", deviceIdx, err)
+		}
+
+		friendlyName := value.String()
+		if strings.EqualFold(friendlyName, deviceName) {
+			var deviceID string
+			if err := endpoint.GetId(&deviceID); err != nil {
+				return "", fmt.Errorf("failed to get device ID for device at index %d: %w", deviceIdx, err)
+			}
+			return deviceID, nil
+		}
+	}
+
+	return "", fmt.Errorf("no device found with name: %s", deviceName)
+}
