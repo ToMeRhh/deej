@@ -187,7 +187,9 @@ func (udpio *UdpIO) setupOnConfigReload() {
 }
 
 func (udpio *UdpIO) handlePacket(logger *zap.SugaredLogger, packet string) {
-	logger.Info("got packet:", packet)
+	if udpio.deej.Verbose() {
+		logger.Info("got packet:", packet)
+	}
 	if !expectedUdpLinePattern.MatchString(packet) {
 		logger.Info("bad syntax")
 		return
@@ -271,8 +273,9 @@ func (udpio *UdpIO) handleSliders(logger *zap.SugaredLogger, data []string) {
 				SliderID:     sliderIdx,
 				PercentValue: normalizedScalar,
 			})
-
-			logger.Debugw("Slider moved", "event", moveEvents[len(moveEvents)-1])
+			if udpio.deej.Verbose() {
+				logger.Debugw("Slider moved", "event", moveEvents[len(moveEvents)-1])
+			}
 		}
 	}
 
