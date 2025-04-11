@@ -5,6 +5,7 @@ package deej
 import (
 	"fmt"
 	"os"
+	"time"
 
 	"go.uber.org/zap"
 
@@ -25,6 +26,8 @@ type Deej struct {
 	deejSlidersController DeejSlidersController
 	deejButtonsController DeejButtonsController
 	sessions              *sessionMap
+
+	restartSessionsTicker time.Ticker
 
 	stopChannel chan bool
 	version     string
@@ -48,11 +51,12 @@ func NewDeej(logger *zap.SugaredLogger, verbose bool) (*Deej, error) {
 	}
 
 	d := &Deej{
-		logger:      logger,
-		notifier:    notifier,
-		config:      config,
-		stopChannel: make(chan bool),
-		verbose:     verbose,
+		logger:                logger,
+		notifier:              notifier,
+		config:                config,
+		stopChannel:           make(chan bool),
+		restartSessionsTicker: *time.NewTicker(2 * time.Hour),
+		verbose:               verbose,
 	}
 
 	sessionFinder, err := newSessionFinder(logger)
@@ -149,6 +153,15 @@ func (d *Deej) run() {
 
 	// watch the config file for changes
 	go d.config.WatchConfigFileChanges()
+
+	// Setup a monitor to refresh the session map every hour.
+	// This solves bugs around stale sessions when the program runs for a long time.
+	go func() {
+		for range d.restartSessionsTicker.C {
+			d.logger.Debug("Refreshing session map")
+			d.sessions.refreshSessions(true)
+		}
+	}()
 
 	// connect to the arduino for the first time
 	go func() {
