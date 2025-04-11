@@ -8,7 +8,13 @@ namespace input_components {
 std::tuple<bool, int> AudioDeviceSelector::getValue() {
   if (digitalRead(_button_gpio_pin) == LOW) {
     // Debounce if needed.
+    int debounce_count = 0;
     while (digitalRead(_button_gpio_pin) == LOW) {
+      debounce_count++;
+      if (debounce_count > 30) {  // 3 seconds == 3000 ms == 30 * delay(100)
+        _on_longpress_override_callback();
+        return std::tuple(false, _selected_device);
+      }
       delay(100);
     }
     setActiveDevice(_selected_device ^ 1);  // Toggle the selected device.

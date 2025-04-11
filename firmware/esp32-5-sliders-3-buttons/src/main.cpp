@@ -93,7 +93,8 @@ void setup() {
   audio_device_selector = new AudioDeviceSelector(
       AUDIO_DEVICE_SELECTOR_BUTTON_PIN,
       AUDIO_DEVICE_SELECTOR_BUTTON_DEV_0_LED_PIN,
-      AUDIO_DEVICE_SELECTOR_BUTTON_DEV_1_LED_PIN, output_devices_mute_button);
+      AUDIO_DEVICE_SELECTOR_BUTTON_DEV_1_LED_PIN, output_devices_mute_button,
+      []() { esp_restart(); });
   Serial.println("Audio device selector button initialized!");
 
   Serial.println("Initialization complete!");
