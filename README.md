@@ -16,7 +16,7 @@ deej is an **open-source hardware volume mixer** for Windows and Linux PCs. It l
 
 For thorough documentation on the basics, please check out [the README of the original project](https://github.com/omriharel/deej).
 
-**[Download the latest release](https://github.com/iamjackg/deej/releases/latest)**
+**[Download the latest release](https://github.com/ToMeRhh/deej/releases)**
 
 ## Configuration
 In `config.yaml` edit the following properties:
@@ -51,19 +51,19 @@ mute_button_mapping:
 ```
 
 ### Output device toggeling
-an index based list of device IDs that will be available to choose from the deej board.
+an index based list of device names that will be available to choose from the deej board.
 See notes below on target names.
 
 ```yaml
 available_output_device:
-  0: "{0.0.0.00000000}.{02870d54-9a1a-4478-a1a9-ced980df96fe}"
-  1: "{0.0.0.00000000}.{717a777c-1b75-456b-bde9-2f4c6c4bf866}"
+  0: "Speakers (Realtek(R) Audio)"
+  1: "Headphones (HyperX Cloud III Wireless)"
 ```
 
 ### Notes on target names
-To get device-id and device name on windows, write this in a PowerShell terminal:
+To get device names on windows, write this in a PowerShell terminal (be sure to select an output device):
 ```powershell
- Get-CimInstance Win32_PnPEntity | ? { $_.PNPClass -eq "AudioEndpoint" } | Select-Object -Property PNPDeviceID, Name | ForEach-Object { Write-Host "$($_.PNPDeviceID.split('\')[2]) - $($_.Name)" }
+ Get-CimInstance Win32_PnPEntity | ? { $_.PNPClass -eq "AudioEndpoint" } | Select-Object -Property PNPDeviceID, Name | ForEach-Object { Write-Host "$($_.Name)" }
 ```
 
 
@@ -113,9 +113,7 @@ SwitchOutput|1
 ### Building the controller
 
 The basics are exactly the same as what is listed in the repo for the original project. The main difference is that the final string should be sent via UDP instead of through the serial port.
-
-**TODO: add a sample firmware**
-
+See firmware that includes all these features [here](https://github.com/ToMeRhh/deej/tree/master/firmware/esp32-5-sliders-3-buttons)
 ## License
 
 deej is released under the [MIT license](./LICENSE).
