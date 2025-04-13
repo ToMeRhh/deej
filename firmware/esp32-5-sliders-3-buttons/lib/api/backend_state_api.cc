@@ -15,18 +15,14 @@ int BackendStateApi::getCurrentOutputDevice() {
     Serial.println("Connection failed");
     return -1;
   }
-  client.setTimeout(2);
 
   static const char* request_prefix = "GetCurrentOutputDevice";
 
   client.print(request_prefix);  // Use print to send a string
   client.print("\n");
-  // while (!client.available());  // wait for response
-  Serial.println("Client Available");
-  String str = client.readString();                      // read entire response
-  Serial.println("**********************************");  // Print the response
-  Serial.println(str);                                   // Print the response
-  client.stop();                                         // Close the connection
+  while (!client.available());                // wait for response
+  String str = client.readStringUntil('\n');  // read entire response
+  client.stop();                              // Close the connection
   int ret = std::stoi(str.c_str());
   return ret;
 }
