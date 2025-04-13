@@ -1,5 +1,5 @@
-#ifndef LIB_UTIL_H
-#define LIB_UTIL_H
+#ifndef LIB_UTILS_UTIL_H
+#define LIB_UTILS_UTIL_H
 
 #include <Arduino.h>
 
