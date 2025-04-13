@@ -16,7 +16,7 @@ class BackendStateApi {
   BackendStateApi(const char* server_ip, const int _server_port)
       : _server_ip(server_ip), _server_port(_server_port) {}
 
-  BackendState getState();
+  int getCurrentOutputDevice();
   std::optional<std::vector<bool>> setMuteButtonsState(
       const std::vector<bool>& new_state);
   std::optional<int> setOutputDeviceState(const int new_state);

@@ -44,6 +44,18 @@ std::vector<MuteButton *> *mute_buttons = nullptr;
 std::vector<Slider *> *sliders = nullptr;
 AudioDeviceSelector *audio_device_selector = nullptr;
 
+void maybeApplyBackendState() {
+  if (tcp_api == nullptr || audio_device_selector == nullptr) {
+    Serial.println("TCP API or Audio Device Selector is not initialized.");
+    return;
+  }
+
+  const auto current_output_device = tcp_api->getCurrentOutputDevice();
+  if (current_output_device != -1) {
+    audio_device_selector->setActiveDevice(current_output_device);
+  }
+}
+
 void setupWifi() {
   Serial.println("Starting");
   WiFi.begin(ssid, password);
@@ -96,6 +108,9 @@ void setup() {
       AUDIO_DEVICE_SELECTOR_BUTTON_DEV_0_LED_PIN,
       AUDIO_DEVICE_SELECTOR_BUTTON_DEV_1_LED_PIN, output_devices_mute_button,
       []() { esp_restart(); });
+
+  maybeApplyBackendState();
+
   Serial.println("Audio device selector button initialized!");
 
   Serial.println("Initialization complete!");

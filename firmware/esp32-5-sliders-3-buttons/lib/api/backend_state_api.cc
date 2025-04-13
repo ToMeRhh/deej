@@ -9,9 +9,22 @@
 namespace lib {
 namespace api {
 
-BackendState BackendStateApi::getState() {
-  // TODO: Implement this method.
-  return BackendState();
+int BackendStateApi::getCurrentOutputDevice() {
+  WiFiClient client;
+  if (!client.connect(this->_server_ip, this->_server_port)) {
+    Serial.println("Connection failed");
+    return -1;
+  }
+
+  static const char* request_prefix = "GetCurrentOutputDevice";
+
+  client.print(request_prefix);  // Use print to send a string
+  client.print("\n");
+  while (!client.available());                // wait for response
+  String str = client.readStringUntil('\n');  // read entire response
+  client.stop();                              // Close the connection
+  int ret = std::stoi(str.c_str());
+  return ret;
 }
 
 std::optional<std::vector<bool>> BackendStateApi::setMuteButtonsState(
