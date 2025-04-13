@@ -24,7 +24,7 @@ class Slider {
       : _slider_index(slider_index),
         _gpioPinNumber(gpioPinNumber),
         _session_mute_button(session_mute_button),
-        _previous_value(0) {
+        _previous_value(-1) {
     this->getState();  // Force update new state.
   }
 

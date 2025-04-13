@@ -10,6 +10,9 @@ namespace lib {
 namespace input_components {
 namespace {
 bool valueIsChanged(int new_val, int old_val) {
+  if (old_val == -1) {
+    return true;
+  }
   if (new_val == old_val) {
     return false;
   }
