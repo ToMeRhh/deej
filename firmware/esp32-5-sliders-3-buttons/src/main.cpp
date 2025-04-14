@@ -122,7 +122,8 @@ void setup() {
 
   // Visually indicate that the system is ready.
   util::blinkLeds(MUTE_BUTTON_0_LED_PIN, MUTE_BUTTON_1_LED_PIN,
-                  AUDIO_DEVICE_SELECTOR_BUTTON_DEV_1_LED_PIN);
+                  AUDIO_DEVICE_SELECTOR_BUTTON_DEV_0_LED_PIN,
+                  AUDIO_DEVICE_SELECTOR_BUTTON_DEV_1_LED_PIN, 300);
 }
 
 void loop() {
