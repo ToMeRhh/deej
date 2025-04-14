@@ -10,6 +10,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/tomerhh/deej/pkg/deej/util"
 	"go.uber.org/zap"
 )
 
@@ -193,6 +194,8 @@ func (tcpio *TcpIO) handleConnection(logger *zap.SugaredLogger, conn net.Conn) {
 			logger.Error("Invalid data, expected a single argument")
 		}
 		response = tcpio.handleSwitchOutput(logger, parts[1])
+	case "GetCurrentOutputDevice":
+		response = tcpio.handleGetCurrentOutputDevice()
 	default:
 		logger.Warn("bad packet opcode")
 	}
@@ -248,4 +251,27 @@ func (tcpio *TcpIO) handleSwitchOutput(logger *zap.SugaredLogger, data string) s
 	res, _ := tcpio.toggleOutputDeviceConsumer(event)
 	logger.Debugw("output device changed", "newState", res)
 	return strconv.Itoa(res.selectedOutputDevice)
+}
+
+func (tcpio *TcpIO) handleGetCurrentOutputDevice() string {
+	currentDeviceId, err := util.GetCurrentAudioDeviceID()
+	if err != nil {
+		tcpio.logger.Error("Failed to get current audio device ID: ", err)
+		return "-1"
+	}
+
+	currentDeviceFriendlyName, err := util.GetDeviceFriendlyNameByIdExec(currentDeviceId)
+	if err != nil {
+		tcpio.logger.Error("Failed to get current audio device name: ", err)
+		return "-1"
+	}
+	tcpio.logger.Debug("Got GetCurrentOutputDevice data: ", currentDeviceId, currentDeviceFriendlyName)
+
+	for deviceIndex, deviceName := range tcpio.deej.config.AvailableOutputDeviceMapping.m {
+		if deviceName[0] == currentDeviceFriendlyName {
+			tcpio.logger.Debug("Found matching device: ", deviceName)
+			return fmt.Sprintf("%d", deviceIndex)
+		}
+	}
+	return "-1"
 }

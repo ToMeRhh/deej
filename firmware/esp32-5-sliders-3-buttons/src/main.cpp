@@ -54,7 +54,7 @@ void maybeApplyBackendState() {
   if (current_output_device != -1) {
     Serial.print("Setting current output device to: ");
     Serial.println(current_output_device);
-    // audio_device_selector->setActiveDevice(current_output_device);
+    audio_device_selector->setActiveDevice(current_output_device);
   } else {
     Serial.println("Failed to get current output device.");
   }
@@ -114,15 +114,15 @@ void setup() {
       AUDIO_DEVICE_SELECTOR_BUTTON_DEV_1_LED_PIN, output_devices_mute_button,
       []() { esp_restart(); });
 
-  // maybeApplyBackendState();
-
+  maybeApplyBackendState();
   Serial.println("Audio device selector button initialized!");
 
   Serial.println("Initialization complete!");
 
   // Visually indicate that the system is ready.
   util::blinkLeds(MUTE_BUTTON_0_LED_PIN, MUTE_BUTTON_1_LED_PIN,
-                  AUDIO_DEVICE_SELECTOR_BUTTON_DEV_1_LED_PIN);
+                  AUDIO_DEVICE_SELECTOR_BUTTON_DEV_0_LED_PIN,
+                  AUDIO_DEVICE_SELECTOR_BUTTON_DEV_1_LED_PIN, 300);
 }
 
 void loop() {

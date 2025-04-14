@@ -17,18 +17,19 @@ int BackendStateApi::getCurrentOutputDevice() {
   }
   client.setTimeout(2);
 
-  static const char* request_prefix = "GetCurrentOutputDevice";
+  static const char* request_prefix = "GetCurrentOutputDevice|";
 
   client.print(request_prefix);  // Use print to send a string
   client.print("\n");
   // while (!client.available());  // wait for response
-  Serial.println("Client Available");
-  String str = client.readString();                      // read entire response
-  Serial.println("**********************************");  // Print the response
-  Serial.println(str);                                   // Print the response
-  client.stop();                                         // Close the connection
-  int ret = std::stoi(str.c_str());
-  return ret;
+  String str = client.readString();  // read entire response
+  client.stop();                     // Close the connection
+  try {
+    return std::stoi(str.c_str());
+  } catch (const std::exception& e) {
+    Serial.println("Error converting string");
+  }
+  return -1;
 }
 
 std::optional<std::vector<bool>> BackendStateApi::setMuteButtonsState(
