@@ -14,7 +14,6 @@ std::tuple<bool, bool> MuteButton::getValue() {
       delay(40);
     }
     bool new_state = !this->_buttons_states[_active_session].is_pressed;
-    setMuteState(_active_session, new_state);
     return std::tuple(true, new_state);
   }
   return std::tuple(false, this->_buttons_states[_active_session].is_pressed);

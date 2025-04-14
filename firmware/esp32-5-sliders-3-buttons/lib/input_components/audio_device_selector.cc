@@ -17,8 +17,7 @@ std::tuple<bool, int> AudioDeviceSelector::getValue() {
       }
       delay(100);
     }
-    setActiveDevice(_selected_device ^ 1);  // Toggle the selected device.
-    return std::tuple(true, _selected_device);
+    return std::tuple(true, _selected_device ^ 1);
   }
   return std::tuple(false, _selected_device);
 }
