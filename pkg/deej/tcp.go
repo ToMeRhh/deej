@@ -179,10 +179,6 @@ func (tcpio *TcpIO) handleConnection(logger *zap.SugaredLogger, conn net.Conn) {
 	}
 
 	parts := strings.Split(request, "|")
-	if len(parts) < 2 {
-		fmt.Println("Invalid input format")
-		return
-	}
 	response := ""
 	switch parts[0] {
 	case "MuteButtons":
