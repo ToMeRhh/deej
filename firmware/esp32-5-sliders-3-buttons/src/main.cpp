@@ -62,6 +62,7 @@ void maybeApplyBackendState() {
 
 void setupWifi() {
   Serial.println("Starting");
+  WiFi.setHostname("Deej");
   WiFi.begin(ssid, password);
   while (WiFi.status() != WL_CONNECTED) {
     Serial.println(".");
