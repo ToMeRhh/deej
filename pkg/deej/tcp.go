@@ -10,6 +10,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/tomerhh/deej/pkg/deej/util"
 	"go.uber.org/zap"
 )
 
@@ -193,6 +194,27 @@ func (tcpio *TcpIO) handleConnection(logger *zap.SugaredLogger, conn net.Conn) {
 			logger.Error("Invalid data, expected a single argument")
 		}
 		response = tcpio.handleSwitchOutput(logger, parts[1])
+	case "GetCurrentOutputDevice":
+		currentDeviceId, err := util.GetCurrentAudioDeviceID()
+		if err != nil {
+			logger.Error("Failed to get current audio device ID: ", err)
+			return
+		}
+
+		currentDeviceFriendlyName, err := util.GetDeviceFriendlyNameByIdExec(currentDeviceId)
+		if err != nil {
+			logger.Error("Failed to get current audio device name: ", err)
+			return
+		}
+		logger.Debug("Got GetCurrentOutputDevice data: ", currentDeviceId, currentDeviceFriendlyName)
+
+		response = "-1"
+		for deviceIndex, deviceName := range tcpio.deej.config.AvailableOutputDeviceMapping.m {
+			if deviceName[0] == currentDeviceFriendlyName {
+				logger.Debug("Found matching device: ", deviceName)
+				response = fmt.Sprintf("%d", deviceIndex)
+			}
+		}
 	default:
 		logger.Warn("bad packet opcode")
 	}

@@ -170,6 +170,82 @@ func SetAudioDeviceByID(deviceID string, logger *zap.SugaredLogger) bool {
 	return true
 }
 
+func GetCurrentAudioDeviceID() (string, error) {
+	if err := ole.CoInitializeEx(0, ole.COINIT_APARTMENTTHREADED); err != nil {
+		return "", fmt.Errorf("failed to initialize COM library, continuing anyway")
+	}
+	defer ole.CoUninitialize()
+
+	var mmDeviceEnumerator *wca.IMMDeviceEnumerator
+	if err := wca.CoCreateInstance(
+		wca.CLSID_MMDeviceEnumerator,
+		0,
+		wca.CLSCTX_ALL,
+		wca.IID_IMMDeviceEnumerator,
+		&mmDeviceEnumerator,
+	); err != nil {
+		return "", fmt.Errorf("failed to create device enumerator: %w", err)
+	}
+	defer mmDeviceEnumerator.Release()
+
+	var defaultDevice *wca.IMMDevice
+	if err := mmDeviceEnumerator.GetDefaultAudioEndpoint(wca.EConsole, wca.DEVICE_STATE_ACTIVE, &defaultDevice); err != nil {
+		return "", fmt.Errorf("failed to get default audio endpoint: %w", err)
+	}
+	defer defaultDevice.Release()
+
+	var deviceID string
+	if err := defaultDevice.GetId(&deviceID); err != nil {
+		return "", fmt.Errorf("failed to get device ID: %w", err)
+	}
+
+	return deviceID, nil
+}
+
+func GetDeviceFriendlyNameByIdExec(deviceID string) (string, error) {
+	if deviceID == "" {
+		return "", errors.New("deviceID cannot be empty")
+	}
+
+	// Escape single quotes in the device ID for PowerShell command
+	psDeviceID := strings.ReplaceAll(deviceID, "'", "''")
+
+	// Construct the PowerShell command
+	psCommand := fmt.Sprintf(
+		`Get-PnpDevice -InstanceId '*%s*' | Select-Object -ExpandProperty FriendlyName`,
+		psDeviceID,
+	)
+
+	// Execute the PowerShell command
+	cmd := exec.Command("powershell", "-NoProfile", "-Command", psCommand)
+
+	cmd.SysProcAttr = &syscall.SysProcAttr{
+		HideWindow: true,
+	}
+
+	var stdout, stderr bytes.Buffer
+	cmd.Stdout = &stdout
+	cmd.Stderr = &stderr
+
+	err := cmd.Run() // Use Run instead of Output to capture stderr separately
+
+	// Check for errors during execution or in stderr
+	if err != nil {
+		stderrStr := strings.TrimSpace(stderr.String())
+		if stderrStr != "" {
+			return "", fmt.Errorf("powershell command failed: %v - stderr: %s", err, stderrStr)
+		}
+		return "", fmt.Errorf("powershell command failed: %v", err)
+	}
+
+	output := strings.TrimSpace(stdout.String())
+	if output == "" {
+		return "", nil // No friendly name found
+	}
+
+	return output, nil
+}
+
 // GetDeviceIDByNameExec finds the PNPDeviceID (InstanceId) of devices matching the given name
 // by executing a PowerShell command.
 // Returns the Device ID and an error if the command fails, or if there are multiple devices matching the name (since we're using wildcards).
