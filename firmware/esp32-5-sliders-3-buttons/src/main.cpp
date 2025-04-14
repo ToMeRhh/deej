@@ -120,9 +120,9 @@ void setup() {
   Serial.println("Initialization complete!");
 
   // Visually indicate that the system is ready.
-  util::blinkLeds(MUTE_BUTTON_0_LED_PIN, MUTE_BUTTON_1_LED_PIN,
-                  AUDIO_DEVICE_SELECTOR_BUTTON_DEV_0_LED_PIN,
-                  AUDIO_DEVICE_SELECTOR_BUTTON_DEV_1_LED_PIN, 300);
+  util::sequentialLEDOn(MUTE_BUTTON_0_LED_PIN, MUTE_BUTTON_1_LED_PIN,
+                        AUDIO_DEVICE_SELECTOR_BUTTON_DEV_0_LED_PIN,
+                        AUDIO_DEVICE_SELECTOR_BUTTON_DEV_1_LED_PIN, 300);
 }
 
 void loop() {
@@ -156,6 +156,9 @@ void loop() {
         mute_buttons->at(i)->setActiveSessionMuteState(
             updated_state.value()[i]);
       }
+    } else {
+      Serial.println("Failed to set mute buttons state.");
+      util::blink2Leds(MUTE_BUTTON_0_LED_PIN, MUTE_BUTTON_1_LED_PIN, 150);
     }
   }
 
@@ -166,6 +169,10 @@ void loop() {
                                                    updated_state.value() == -1
                                                ? 0
                                                : updated_state.value());
+    if (!updated_state.has_value()) {
+      Serial.println("Failed to set output device state.");
+      util::blinkLed(AUDIO_DEVICE_SELECTOR_BUTTON_DEV_0_LED_PIN, 150);
+    }
   }
 
   delay(150);
