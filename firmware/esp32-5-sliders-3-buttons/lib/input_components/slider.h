@@ -25,11 +25,10 @@ class Slider {
         _gpioPinNumber(gpioPinNumber),
         _session_mute_button(session_mute_button),
         _previous_value(-1) {
-    this->getState();  // Force update new state.
+    this->getValue();  // Force update new state.
   }
 
   std::tuple<bool, int> getValue();
-  std::tuple<std::string, std::string> getState();
 
   const int _slider_index;
 

@@ -40,7 +40,6 @@ class AudioDeviceSelector {
   inline int getActiveDevice() { return _selected_device; }
 
   std::tuple<bool, int> getValue();
-  std::tuple<std::string, std::string> getState();
 
  private:
   const int _button_gpio_pin;

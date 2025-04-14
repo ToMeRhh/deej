@@ -22,10 +22,6 @@ std::tuple<bool, int> AudioDeviceSelector::getValue() {
   return std::tuple(false, _selected_device);
 }
 
-std::tuple<std::string, std::string> AudioDeviceSelector::getState() {
-  return {std::make_tuple("SELECTOR", std::to_string(_selected_device))};
-}
-
 void AudioDeviceSelector::setActiveDevice(int selected_device) {
   _selected_device = selected_device;
   if (_selected_device == 0) {

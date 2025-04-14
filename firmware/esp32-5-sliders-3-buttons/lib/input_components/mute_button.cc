@@ -19,11 +19,6 @@ std::tuple<bool, bool> MuteButton::getValue() {
   return std::tuple(false, this->_buttons_states[_active_session].is_pressed);
 }
 
-void MuteButton::setMuteState(int session, bool mute_state) {
-  this->_buttons_states[session].is_pressed = mute_state;
-  updateLedState();
-}
-
 void MuteButton::setActiveSessionMuteState(bool mute_state) {
   this->_buttons_states[this->_active_session].is_pressed = mute_state;
   updateLedState();
@@ -44,12 +39,6 @@ void MuteButton::updateLedState() {
   digitalWrite(
       _led_gpio_pin,
       (current_state.is_pressed || current_state.led_state) ? LOW : HIGH);
-}
-
-std::tuple<std::string, std::string> MuteButton::getState() {
-  return {std::make_tuple(
-      std::to_string(this->_button_index),
-      std::to_string(_buttons_states[_active_session].is_pressed))};
 }
 
 }  // namespace input_components

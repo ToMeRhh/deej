@@ -37,13 +37,5 @@ std::tuple<bool, int> Slider::getValue() {
   return std::tuple(false, percentValue);
 }
 
-std::tuple<std::string, std::string> Slider::getState() {
-  if (auto [changed, value] = getValue(); changed) {
-    this->_previous_value = value;
-  }
-  return {std::make_tuple(std::to_string(this->_slider_index),
-                          std::to_string(_previous_value))};
-}
-
 }  // namespace input_components
 }  // namespace lib
