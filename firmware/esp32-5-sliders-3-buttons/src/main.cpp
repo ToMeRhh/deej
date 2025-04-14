@@ -161,11 +161,11 @@ void loop() {
 
   if (auto [changed, value] = audio_device_selector->getValue(); changed) {
     const auto &updated_state = tcp_api->setOutputDeviceState(value);
-    if (updated_state.has_value()) {
-      // In case of failure - use the value from the server or fallback to 0.
-      audio_device_selector->setActiveDevice(
-          updated_state.value() == -1 ? 0 : updated_state.value());
-    }
+    // In case of failure - use the value from the server or fallback to 0.
+    audio_device_selector->setActiveDevice(!updated_state.has_value() ||
+                                                   updated_state.value() == -1
+                                               ? 0
+                                               : updated_state.value());
   }
 
   delay(150);
