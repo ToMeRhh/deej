@@ -25,9 +25,6 @@ class AudioDeviceSelector {
     pinMode(_dev_1_led_pin, OUTPUT);
 
     // Turn led off at start.
-    // TODO 1: Set the selected device on startup, so the LED is correct.
-    // TODO 2 (Optional): Fetch the correct state from the server and set it
-    // here accordingly.
     digitalWrite(_dev_0_led_pin, HIGH);
     digitalWrite(_dev_1_led_pin, HIGH);
 
