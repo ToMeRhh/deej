@@ -368,7 +368,7 @@ func (m *sessionMap) handleToggleOutputDeviceClickedEventAndGetState(event Toggl
 	}
 
 	// get the UUID of the target device to toggle to
-	selectedDevice, err := util.GetDeviceIDByNameExec(selectedDeviceFriendlyName[0])
+	selectedDevice, err := util.GetDeviceIDByNameWinAPI(selectedDeviceFriendlyName[0])
 	if err != nil {
 		m.logger.Warnw("Failed to get device ID by name", "error", err)
 		return

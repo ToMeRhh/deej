@@ -202,6 +202,68 @@ func GetCurrentAudioDeviceID() (string, error) {
 	return deviceID, nil
 }
 
+// Finds the friendly name of a device by its ID using the Windows API.
+func GetDeviceFriendlyNameByIdWinApi(wantDeviceID string) (string, error) {
+	if wantDeviceID == "" {
+		return "", errors.New("deviceID cannot be empty")
+	}
+
+	if err := ole.CoInitializeEx(0, ole.COINIT_APARTMENTTHREADED); err != nil {
+		return "", fmt.Errorf("failed to initialize COM library: %w", err)
+	}
+	defer ole.CoUninitialize()
+
+	var mmDeviceEnumerator *wca.IMMDeviceEnumerator
+	if err := wca.CoCreateInstance(
+		wca.CLSID_MMDeviceEnumerator,
+		0,
+		wca.CLSCTX_ALL,
+		wca.IID_IMMDeviceEnumerator,
+		&mmDeviceEnumerator,
+	); err != nil {
+		return "", fmt.Errorf("failed to create device enumerator: %w", err)
+	}
+	defer mmDeviceEnumerator.Release()
+
+	var deviceCollection *wca.IMMDeviceCollection
+	if err := mmDeviceEnumerator.EnumAudioEndpoints(wca.EAll, wca.DEVICE_STATE_ACTIVE, &deviceCollection); err != nil {
+		return "", fmt.Errorf("failed to enumerate audio endpoints: %w", err)
+	}
+	defer deviceCollection.Release()
+
+	var deviceCount uint32
+	if err := deviceCollection.GetCount(&deviceCount); err != nil {
+		return "", fmt.Errorf("failed to get device count: %w", err)
+	}
+
+	for deviceIdx := uint32(0); deviceIdx < deviceCount; deviceIdx++ {
+		var endpoint *wca.IMMDevice
+		if err := deviceCollection.Item(deviceIdx, &endpoint); err != nil {
+			return "", fmt.Errorf("failed to get device at index %d: %w", deviceIdx, err)
+		}
+		defer endpoint.Release()
+		var currentDeviceID string
+		if err := endpoint.GetId(&currentDeviceID); err != nil {
+			return "", fmt.Errorf("failed to get device ID for device at index %d: %w", deviceIdx, err)
+		}
+		if currentDeviceID == wantDeviceID {
+			var propertyStore *wca.IPropertyStore
+			if err := endpoint.OpenPropertyStore(wca.STGM_READ, &propertyStore); err != nil {
+				return "", fmt.Errorf("failed to open property store for device at index %d: %w", deviceIdx, err)
+			}
+			defer propertyStore.Release()
+
+			value := &wca.PROPVARIANT{}
+			if err := propertyStore.GetValue(&wca.PKEY_Device_FriendlyName, value); err != nil {
+				return "", fmt.Errorf("failed to get friendly name for device at index %d: %w", deviceIdx, err)
+			}
+			friendlyName := value.String()
+			return friendlyName, nil
+		}
+	}
+	return "", fmt.Errorf("no device found with name: %s", wantDeviceID)
+}
+
 func GetDeviceFriendlyNameByIdExec(deviceID string) (string, error) {
 	if deviceID == "" {
 		return "", errors.New("deviceID cannot be empty")

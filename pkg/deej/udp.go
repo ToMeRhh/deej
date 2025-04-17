@@ -188,7 +188,7 @@ func (udpio *UdpIO) setupOnConfigReload() {
 
 func (udpio *UdpIO) handlePacket(logger *zap.SugaredLogger, packet string) {
 	if udpio.deej.Verbose() {
-		logger.Info("got packet:", packet)
+		logger.Info("got UDP packet:", packet)
 	}
 	if !expectedUdpLinePattern.MatchString(packet) {
 		logger.Info("bad syntax")
@@ -331,10 +331,8 @@ func (udpio *UdpIO) handleSwitchOutput(logger *zap.SugaredLogger, data string) {
 	event := ToggleOutoutDeviceClickEvent{
 		selectedOutputDevice: outputId,
 	}
-	logger.Debugw("output device changed", "event", event.selectedOutputDevice)
 
 	for _, consumer := range udpio.selectedOutoutDeviceChangedConsumers {
 		consumer <- event
 	}
-
 }

@@ -77,7 +77,7 @@ func (tcpio *TcpIO) Start() error {
 			case <-tcpio.stopChannel:
 				tcpio.close(tcpio.logger)
 			case packet := <-packetChannel:
-				tcpio.handleConnection(tcpio.logger, packet)
+				tcpio.handleConnection(packet)
 			}
 		}
 	}()
@@ -159,9 +159,9 @@ func (tcpio *TcpIO) setupOnConfigReload() {
 	}()
 }
 
-func (tcpio *TcpIO) handleConnection(logger *zap.SugaredLogger, conn net.Conn) {
+func (tcpio *TcpIO) handleConnection(conn net.Conn) {
 	defer conn.Close()
-
+	tcpio.logger.Debug("got TCP packet")
 	reader := bufio.NewReader(conn)
 
 	conn.SetDeadline(time.Now().Add(5 * time.Second))
@@ -171,10 +171,10 @@ func (tcpio *TcpIO) handleConnection(logger *zap.SugaredLogger, conn net.Conn) {
 		return
 	}
 	request = strings.Trim(request, "\n")
-	logger.Debug("Received request:", request)
+	tcpio.logger.Debug("Received request:", request)
 
 	if !expectedLinePattern.MatchString(request) {
-		logger.Info("bad syntax")
+		tcpio.logger.Info("bad syntax")
 		return
 	}
 
@@ -182,19 +182,21 @@ func (tcpio *TcpIO) handleConnection(logger *zap.SugaredLogger, conn net.Conn) {
 	response := ""
 	switch parts[0] {
 	case "MuteButtons":
-		logger.Debug("Got MuteButtons data: ", parts[1:])
-		response = tcpio.handleMuteButtons(logger, parts[1:])
+		tcpio.logger.Debug("Got MuteButtons data: ", parts[1:])
+		response = tcpio.handleMuteButtons(tcpio.logger, parts[1:])
 	case "SwitchOutput":
-		logger.Debug("Got SwitchOutput data: ", parts[1:])
+		tcpio.logger.Debug("Got SwitchOutput data: ", parts[1:])
 		if len(parts[1:]) != 1 {
-			logger.Error("Invalid data, expected a single argument")
+			tcpio.logger.Error("Invalid data, expected a single argument")
 		}
-		response = tcpio.handleSwitchOutput(logger, parts[1])
+		response = tcpio.handleSwitchOutput(parts[1])
 	case "GetCurrentOutputDevice":
+		tcpio.logger.Debug("Got GetCurrentOutputDevice")
 		response = tcpio.handleGetCurrentOutputDevice()
 	default:
-		logger.Warn("bad packet opcode")
+		tcpio.logger.Warn("bad packet opcode")
 	}
+	tcpio.logger.Debug("Sending response: ", response)
 	conn.Write([]byte(response + "\n"))
 }
 
@@ -237,15 +239,13 @@ func (tcpio *TcpIO) handleMuteButtons(logger *zap.SugaredLogger, data []string) 
 	return strings.Join(strSlice, "|")
 }
 
-func (tcpio *TcpIO) handleSwitchOutput(logger *zap.SugaredLogger, data string) string {
+func (tcpio *TcpIO) handleSwitchOutput(data string) string {
 	// convert output device ID to int
 	outputId, _ := strconv.Atoi(string(data))
 	event := ToggleOutoutDeviceClickEvent{
 		selectedOutputDevice: outputId,
 	}
-	logger.Debugw("output device changed", "event", event.selectedOutputDevice)
 	res, _ := tcpio.toggleOutputDeviceConsumer(event)
-	logger.Debugw("output device changed", "newState", res)
 	return strconv.Itoa(res.selectedOutputDevice)
 }
 
@@ -256,7 +256,7 @@ func (tcpio *TcpIO) handleGetCurrentOutputDevice() string {
 		return "-1"
 	}
 
-	currentDeviceFriendlyName, err := util.GetDeviceFriendlyNameByIdExec(currentDeviceId)
+	currentDeviceFriendlyName, err := util.GetDeviceFriendlyNameByIdWinApi(currentDeviceId)
 	if err != nil {
 		tcpio.logger.Error("Failed to get current audio device name: ", err)
 		return "-1"
