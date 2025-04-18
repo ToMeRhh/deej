@@ -245,7 +245,11 @@ func (tcpio *TcpIO) handleSwitchOutput(data string) string {
 	event := ToggleOutoutDeviceClickEvent{
 		selectedOutputDevice: outputId,
 	}
-	res, _ := tcpio.toggleOutputDeviceConsumer(event)
+	res, err := tcpio.toggleOutputDeviceConsumer(event)
+	if err != nil {
+		tcpio.logger.Error("Failed to handle SwitchOutput: ", err)
+		return "-1"
+	}
 	return strconv.Itoa(res.selectedOutputDevice)
 }
 
