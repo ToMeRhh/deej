@@ -1,12 +1,14 @@
 package deej
 
 import (
+	"errors"
 	"fmt"
 	"regexp"
 	"strings"
 	"sync"
 	"time"
 
+	ole "github.com/go-ole/go-ole"
 	"github.com/thoas/go-funk"
 	"github.com/tomerhh/deej/pkg/deej/util"
 	"go.uber.org/zap"
@@ -361,24 +363,44 @@ func (m *sessionMap) handleToggleOutputDeviceClickedEventAndGetState(event Toggl
 	selectedDeviceFriendlyName, ok := m.deej.config.AvailableOutputDeviceMapping.get(event.selectedOutputDevice)
 	if !ok {
 		m.logger.Warn("Ignoring data for unknown output device (%d)", event.selectedOutputDevice)
-		return
+		return OutputDeviceState{}, fmt.Errorf("Ignoring data for unknown output device (%d) %w", event.selectedOutputDevice, err)
 	} else if len(selectedDeviceFriendlyName) != 1 {
 		m.logger.Warn("Multiple output device toggeling is not supported (%d), %s", event.selectedOutputDevice, selectedDeviceFriendlyName)
-		return
+		return OutputDeviceState{}, fmt.Errorf("config consists of multiple output devices to toggle %w", err)
 	}
 
 	// get the UUID of the target device to toggle to
 	selectedDevice, err := util.GetDeviceIDByNameWinAPI(selectedDeviceFriendlyName[0])
+
+	// if the error is "Incorrect function" that corresponds to 0x00000001,
+	// which represents E_FALSE in COM error handling. this is fine for this function,
+	// and just means that the call was redundant.
+	const eFalse = 1
+	oleError := &ole.OleError{}
+
+	if errors.As(err, &oleError) {
+		if oleError.Code() == eFalse {
+			m.logger.Warnf("CoInitializeEx failed with E_FALSE due to redundant invocation %w", err)
+		} else {
+			m.logger.Warnw("Failed to call CoInitializeEx",
+				"isOleError", true,
+				"error", err,
+				"oleError", oleError,
+				"err", err)
+
+			return OutputDeviceState{}, fmt.Errorf("call CoInitializeEx: %w", err)
+		}
+	}
 	if err != nil {
 		m.logger.Warnw("Failed to get device ID by name", "error", err)
-		return
+		return OutputDeviceState{}, fmt.Errorf("failed to get device ID by name: %w", err)
 	}
 
 	m.logger.Infof("Changing selected device to: %s (%s)", selectedDevice, selectedDeviceFriendlyName[0])
 	res := util.SetAudioDeviceByID(selectedDevice, m.logger)
 	m.refreshSessions(true)
 	if res {
-		return OutputDeviceState{selectedOutputDevice: event.selectedOutputDevice}, nil
+		return OutputDeviceState(event), nil
 	}
 	out, _, err := m.sessionFinder.getDefaultAudioEndpoints()
 	if err != nil {
