@@ -9,9 +9,11 @@
 slider_mapping:
   0: "Speakers (Realtek(R) Audio)"
   1: "Headphones (HyperX Cloud III Wireless)"
-  2: discord.exe
-  3: deej.unmapped
-  4: cod.exe
+  2:
+    - cod.exe
+    - cs2.exe
+  3: spotify.exe
+  4: deej.unmapped
 
 mute_button_mapping:
   0: master
