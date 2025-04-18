@@ -164,8 +164,7 @@ void loop() {
 
   if (auto [changed, value] = audio_device_selector->getValue(); changed) {
     const auto &updated_state = tcp_api->setOutputDeviceState(value);
-    if (updated_state.has_value()) {
-      // In case of failure - use the value from the server or fallback to 0.
+    if (updated_state.has_value() && updated_state.value() >= 0) {
       audio_device_selector->setActiveDevice(updated_state.value());
     } else {
       Serial.println("Failed to set output device state.");
